@@ -19,7 +19,77 @@ Blog posts:
 
 This project was originally created for SharpSploit (https://github.com/cobbr/SharpSploit). With permission from the author(s), it is not hosted here as a standalone library and NuGet.
 
-# Example
+# Example 1 - Resolving Exported Unmanaged APIs
+
+The example below demonstrates how to use DInvoke to dynamically find and call exports of a DLL.
+
+1) Get the base address of ntdll.dll. It is loaded into every Windows process when it is initialized, so we know that it will already be loaded. As such, we can safely search the PEB’s list of loaded modules to find a reference to it. Once we’ve found its base address from the PEB, we print the address.
+2) Use GetLibraryAddress to find an export within ntdll.dll by name.
+3) Use GetLibraryAddress to find an export within ntdll.dll by ordinal.
+4) Use GetLibraryAddress to find an export within ntdll.dll by keyed hash.
+5) Given the base address of ntdll.dll that we found earlier, use GetExportAddress to find an export within the module in memory by name.
+
+```csharp
+
+///Author: b33f (@FuzzySec, Ruben Boonen)
+using System;
+
+using DynamicInvoke = DInvoke.DynamicInvoke;
+
+namespace SpTestcase
+{
+    class Program
+    {
+
+        static void Main(string[] args)
+        {
+            // Details
+            String testDetail = @"
+            #=================>
+            # Hello there!
+            # I find things dynamically; base
+            # addresses and function pointers.
+            #=================>
+            ";
+            Console.WriteLine(testDetail);
+
+            // Get NTDLL base from the PEB
+            Console.WriteLine("[?] Resolve Ntdll base from the PEB..");
+            IntPtr hNtdll = DynamicInvoke.Generic.GetPebLdrModuleEntry("ntdll.dll");
+            Console.WriteLine("[>] Ntdll base address : " + string.Format("{0:X}", hNtdll.ToInt64()) + "\n");
+
+            // Search function by name
+            Console.WriteLine("[?] Specifying the name of a DLL (\"ntdll.dll\"), resolve a function by walking the export table in-memory..");
+            Console.WriteLine("[+] Search by name --> NtCommitComplete");
+            IntPtr pNtCommitComplete = DynamicInvoke.Generic.GetLibraryAddress("ntdll.dll", "NtCommitComplete", true);
+            Console.WriteLine("[>] pNtCommitComplete : " + string.Format("{0:X}", pNtCommitComplete.ToInt64()) + "\n");
+
+            Console.WriteLine("[+] Search by ordinal --> 0x260 (NtSetSystemTime)");
+            IntPtr pNtSetSystemTime = DynamicInvoke.Generic.GetLibraryAddress("ntdll.dll", 0x260, true);
+            Console.WriteLine("[>] pNtSetSystemTime : " + string.Format("{0:X}", pNtSetSystemTime.ToInt64()) + "\n");
+
+            Console.WriteLine("[+] Search by keyed hash --> 138F2374EC295F225BD918F7D8058316 (RtlAdjustPrivilege)");
+            Console.WriteLine("[>] Hash : HMACMD5(Key).ComputeHash(FunctionName)");
+            String fHash = DynamicInvoke.Generic.GetAPIHash("RtlAdjustPrivilege", 0xaabb1122);
+            IntPtr pRtlAdjustPrivilege = DynamicInvoke.Generic.GetLibraryAddress("ntdll.dll", fHash, 0xaabb1122);
+            Console.WriteLine("[>] pRtlAdjustPrivilege : " + string.Format("{0:X}", pRtlAdjustPrivilege.ToInt64()) + "\n");
+
+            // Search for function from base address of DLL
+            Console.WriteLine("[?] Specifying the base address of DLL in memory ({0:X}), resolve function by walking its export table...", hNtdll.ToInt64());
+            Console.WriteLine("[+] Search by name --> NtCommitComplete");
+            IntPtr pNtCommitComplete2 = DynamicInvoke.Generic.GetExportAddress(hNtdll, "NtCommitComplete");
+            Console.WriteLine("[>] pNtCommitComplete : " + string.Format("{0:X}", pNtCommitComplete2.ToInt64()) + "\n");
+
+            // Pause execution
+            Console.WriteLine("[*] Pausing execution..");
+            Console.ReadLine();
+        }
+    }
+}
+
+```
+
+# Example 2 - Invoking Unmanaged Code
 In the example below, we first call OpenProcess normally using PInvoke. Then, we will call it in several ways using DInvoke to demonstrate that each mechanism successfully executes the unmanaged code and evades API hooks.
 
 ```csharp
