@@ -16,3 +16,8 @@ jobs:
       uses: warrenbuckley/Setup-MSBuild@v1
     - name: Build with MSBuild
       run: msbuild  DInvoke\DInvoke.sln -p:Configuration=Release
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: DInvoke AnyCPU Release
+        path: DInvoke\DInvoke\bin\Release\DInvoke.dll
