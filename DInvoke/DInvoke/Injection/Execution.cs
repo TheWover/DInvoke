@@ -241,7 +241,7 @@ namespace DInvoke.Injection
             }
 
             // If successful, return the handle to the new thread. Otherwise return NULL
-            if (result == Data.Native.NTSTATUS.Unsuccessful || result <= Data.Native.NTSTATUS.Success)
+            if (result != Native.NTSTATUS.Success)
             {
                 return false;
             }
