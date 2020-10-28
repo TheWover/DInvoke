@@ -17,7 +17,9 @@ Blog posts:
 1. Emulating Covert Operations - Dynamic Invocation (Avoiding PInvoke & API Hooks): https://thewover.github.io/Dynamic-Invoke/
 2. Coming soon.
 
-This project was originally created for SharpSploit (https://github.com/cobbr/SharpSploit). With permission from the author(s), it is not hosted here as a standalone library and NuGet.
+This project was originally created for SharpSploit (https://github.com/cobbr/SharpSploit). With permission from the author(s), it is now hosted here as a standalone library and NuGet.
+
+NuGet: https://www.nuget.org/packages/DInvoke/
 
 # Example 1 - Resolving Exported Unmanaged APIs
 
