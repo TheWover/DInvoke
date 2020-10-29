@@ -6,8 +6,8 @@ env:
      MAJOR_VERSION: 1
      MINOR_VERSION: 3
      PATCH_VERSION: 0
-     VERSION: ${{ env.MAJOR_VERSION }}.${{ env.MINOR_VERSION }}.${{ env.PATCH_VERSION }}
-     VERSION_NUPKG: ${{ env.VERSION }}.nupkg
+     VERSION: ${{ MAJOR_VERSION }}.${{ MINOR_VERSION }}.${{ PATCH_VERSION }}
+     VERSION_NUPKG: ${{ VERSION }}.nupkg
 
 jobs:
   build:
