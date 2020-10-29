@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>1.0.3</version>
+    <title>$title$</title>
+    <authors>TheWover</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/TheWover/DInvoke</projectUrl>
+    <description>Dynamically invoke arbitrary unmanaged code from managed code without PInvoke. </description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>DInvoke PInvoke Unmanaged Reflection Hooking Injection</tags>
+  </metadata>
+</package>
