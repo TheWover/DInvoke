@@ -6,8 +6,6 @@ env:
      MAJOR_VERSION: 1
      MINOR_VERSION: 3
      PATCH_VERSION: 0
-     VERSION: ${{ MAJOR_VERSION }}.${{ MINOR_VERSION }}.${{ PATCH_VERSION }}
-     VERSION_NUPKG: ${{ VERSION }}.nupkg
 
 jobs:
   build:
@@ -23,7 +21,7 @@ jobs:
     - name: Build with MSBuild
       run: msbuild  DInvoke\DInvoke.sln -p:Configuration=Release
     - name: Display version number
-      run: echo "VERSION ${{ env.VERSION }}"
+      run: echo "VERSION ${{ env.MAJOR_VERSION }}.${{ env.MINOR_VERSION }}.${{ env.PATCH_VERSION }}"
     - name: Pack NuGet
       run: nuget pack DInvoke\DInvoke\DInvoke.csproj -Version ${{ env.VERSION }} -Prop Configuration=Release
     - name: Archive artifacts
