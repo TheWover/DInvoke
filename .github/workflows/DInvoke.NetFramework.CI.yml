@@ -1,19 +1,18 @@
 name: NetFrameWork.Legacy.CI
 
 on: [push]
- 
+
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.3.3
     - name: Setup Nuget.exe
-      uses: warrenbuckley/Setup-Nuget@v1
+      uses: NuGet/setup-nuget@v1.0.2
     - name: Restore packages
       run: nuget restore DInvoke\DInvoke.sln
     - name: Setup MSBuild.exe
-      uses: warrenbuckley/Setup-MSBuild@v1
+      uses: microsoft/setup-msbuild@v1
     - name: Build with MSBuild
       run: msbuild  DInvoke\DInvoke.sln -p:Configuration=Release
     - name: Archive artifacts
