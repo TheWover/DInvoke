@@ -21,7 +21,7 @@ jobs:
     - name: Display version number
       run: echo "VERSION ${{ env.VERSION }}"
     - name: Pack NuGet
-      run: nuget pack -Version ${{ env.VERSION }} -Prop Configuration=Release
+      run: nuget pack DInvoke\DInvoke\DInvoke.csproj -Version ${{ env.VERSION }} -Prop Configuration=Release
     - name: Archive artifacts
       uses: actions/upload-artifact@v2
       with:
