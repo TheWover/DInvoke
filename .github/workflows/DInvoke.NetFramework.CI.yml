@@ -4,7 +4,7 @@ on: [push]
 
 env:
      VERSION: ${{ github.run_id }}.${{ github.run_number }}
-     VERSION_NUPKG: ${{ github.run_id }}.${{ github.run_number }}
+     VERSION_NUPKG: ${{ github.run_id }}.${{ github.run_number }}.0.nupkg
 jobs:
   build:
     runs-on: windows-latest
