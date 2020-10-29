@@ -6,8 +6,8 @@ on:
     
 env:
      MAJOR_VERSION: 1
-     MINOR_VERSION: 3
-     PATCH_VERSION: 0
+     MINOR_VERSION: 0
+     PATCH_VERSION: 4
 jobs:
   package:
     runs-on: windows-latest
