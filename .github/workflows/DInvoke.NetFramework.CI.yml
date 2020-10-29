@@ -2,9 +2,6 @@ name: NetFrameWork.Legacy.CI
 
 on: [push]
 
-env:
-     VERSION: ${{ github.sha }}
-     VERSION_NUPKG: ${{ github.sha }}.0.nupkg
 jobs:
   build:
     runs-on: windows-latest
@@ -18,10 +15,6 @@ jobs:
       uses: warrenbuckley/Setup-MSBuild@v1
     - name: Build with MSBuild
       run: msbuild  DInvoke\DInvoke.sln -p:Configuration=Release
-    - name: Display version number
-      run: echo "VERSION ${{ env.VERSION }}"
-    - name: Pack NuGet
-      run: nuget pack DInvoke\DInvoke\DInvoke.csproj -Version ${{ env.VERSION }} -Prop Configuration=Release
     - name: Archive artifacts
       uses: actions/upload-artifact@v2
       with:
