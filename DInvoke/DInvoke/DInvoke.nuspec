@@ -9,7 +9,7 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/TheWover/DInvoke</projectUrl>
     <description>Dynamically invoke arbitrary unmanaged code from managed code without PInvoke. </description>
-    <releaseNotes>Initial release.</releaseNotes>
+    <releaseNotes>Patched error checking in RemoteThreadCreate.</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>DInvoke PInvoke Unmanaged Reflection Hooking Injection</tags>
   </metadata>
