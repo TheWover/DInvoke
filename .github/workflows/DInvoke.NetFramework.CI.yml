@@ -1,13 +1,13 @@
 name: NetFrameWork.Legacy.CI
 
 on: [push]
+
+env:
+     VERSION: ${{ github.run_id }}-${{ github.run_number }}
  
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      VERSION: ${{ github.run_id }}-${{ github.run_number }}
-
     steps:
     - uses: actions/checkout@v1
     - name: Setup Nuget.exe
@@ -19,9 +19,9 @@ jobs:
     - name: Build with MSBuild
       run: msbuild  DInvoke\DInvoke.sln -p:Configuration=Release
     - name: Display version number
-      run: echo "VERSION %VERSION%"
+      run: echo "VERSION ${{ env.VERSION }}"
     - name: Pack NuGet
-      run: nuget pack -Version %VERSION% -Prop Configuration=Release
+      run: nuget pack -Version ${{ env.VERSION }} -Prop Configuration=Release
     - name: Archive artifacts
       uses: actions/upload-artifact@v2
       with:
