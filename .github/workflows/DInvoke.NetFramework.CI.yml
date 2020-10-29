@@ -29,3 +29,8 @@ jobs:
       with:
         name: DInvoke AnyCPU Release
         path: DInvoke\DInvoke\bin\Release\DInvoke.dll
+    - name: Archive NuGet
+      uses: actions/upload-artifact@v2
+      with:
+        name: NuGet Package
+        path: DInvoke\DInvoke\DInvoke.${{ env.MAJOR_VERSION }}.${{ env.MINOR_VERSION }}.${{ env.PATCH_VERSION }}.nupkg
