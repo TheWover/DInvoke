@@ -3,8 +3,8 @@ name: NetFrameWork.Legacy.CI
 on: [push]
 
 env:
-     VERSION: ${{ github.run_id }}-${{ github.run_number }}
- 
+     VERSION: ${{ github.run_id }}.${{ github.run_number }}
+     VERSION_NUPKG: ${{ github.run_id }}.0.0${{ github.run_number }}
 jobs:
   build:
     runs-on: windows-latest
