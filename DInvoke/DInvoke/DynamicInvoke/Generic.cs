@@ -636,6 +636,59 @@ namespace DInvoke.DynamicInvoke
         }
 
         /// <summary>
+        /// Call a manually mapped DLL by Export.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <param name="Ordinal">The number of the ordinal to search for (e.g. 0x07).</param>
+        /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+        /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
+        /// <returns>void</returns>
+        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, short Ordinal, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
+        {
+            // Call entry point if user has specified
+            if (CallEntry)
+            {
+                CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            }
+
+            // Get export pointer
+            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, Ordinal);
+
+            // Call export
+            return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
+        }
+
+        /// <summary>
+        /// Call a manually mapped DLL by Export.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <param name="FunctionHash">Hash of the exported procedure.</param>
+        /// <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
+        /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+        /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
+        /// <returns>void</returns>
+        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string FunctionHash, long Key, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
+        {
+            // Call entry point if user has specified
+            if (CallEntry)
+            {
+                CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            }
+
+            // Get export pointer
+            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, FunctionHash, Key);
+
+            // Call export
+            return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
+        }
+
+        /// <summary>
         /// Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
