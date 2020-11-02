@@ -1,0 +1,32 @@
+name: NetFrameWork.Legacy.CI
+
+on:
+  release:
+    types: [published]
+    
+env:
+     MAJOR_VERSION: 1
+     MINOR_VERSION: 0
+     PATCH_VERSION: 4
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Nuget.exe
+      uses: warrenbuckley/Setup-Nuget@v1
+    - name: Restore packages
+      run: nuget restore DInvoke\DInvoke.sln
+    - name: Setup MSBuild.exe
+      uses: warrenbuckley/Setup-MSBuild@v1
+    - name: Build with MSBuild
+      run: msbuild  DInvoke\DInvoke.sln -p:Configuration=Release
+    - name: Display version number
+      run: echo "VERSION ${{ env.MAJOR_VERSION }}.${{ env.MINOR_VERSION }}.${{ env.PATCH_VERSION }}"
+    - name: Pack NuGet
+      run: nuget pack DInvoke\DInvoke\DInvoke.csproj -Version ${{ env.MAJOR_VERSION }}.${{ env.MINOR_VERSION }}.${{ env.PATCH_VERSION }} -Prop Configuration=Release
+    - name: Archive NuGet
+      uses: actions/upload-artifact@v2
+      with:
+        name: NuGet Package
+        path: DInvoke.${{ env.MAJOR_VERSION }}.${{ env.MINOR_VERSION }}.${{ env.PATCH_VERSION }}.nupkg
