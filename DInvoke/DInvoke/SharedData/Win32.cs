@@ -820,14 +820,59 @@ namespace DInvoke.Data
                 SECTION_MAP_WRITE = 0x0002,
                 SECTION_MAP_READ = 0x0004,
                 SECTION_MAP_EXECUTE = 0x0008,
-                SECTION_EXTEND_SIZE = 0x0010
-        };
+                SECTION_EXTEND_SIZE = 0x0010,
+
+                //expanded for registry alterations https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-key-security-and-access-rights
+                KEY_ALL_ACCESS = 0xF003F,
+                KEY_CREATE_LINK = 0x0020,
+                KEY_CREATE_SUB_KEY = 0x0004,
+                KEY_ENUMERATE_SUB_KEYS = 0x0008,
+                KEY_EXECUTE = 0x20019,
+                KEY_NOTIFY = 0x0010,
+                KEY_QUERY_VALUE = 0x0001,
+                KEY_READ = 0x20019,
+                KEY_SET_VALUE = 0x0002,
+                KEY_WOW64_32KEY = 0x0200,
+                KEY_WOW64_64KEY = 0x0100,
+                KEY_WRITE = 0x20006,
+
+            };
+
+            //https://www.pinvoke.net/default.aspx/Structures/OBJECT_ATTRIBUTES.html
+            [StructLayout(LayoutKind.Sequential)]
+            public struct OBJECT_ATTRIBUTES
+            {
+                public int Length;
+                public IntPtr RootDirectory;
+                public IntPtr objectName;
+                public uint Attributes;
+                public IntPtr SecurityDescriptor;
+                public IntPtr SecurityQualityOfService;
+            }
+
+            public enum REGISTRY_TYPES : uint
+            {
+                REG_NONE = 0x00000000,
+                REG_SZ = 0x00000001,
+                REG_EXPAND_SZ = 0x00000002,
+                REG_BINARY = 0x00000003,
+                REG_DWORD = 0x00000004,
+                REG_DWORD_LITTLE_ENDIAN = 0x00000004,
+                REG_DWORD_BIG_ENDIAN = 0x00000005,
+                REG_LINK = 0x00000006,
+                REG_MULTI_SZ = 0x00000007,
+                REG_RESOURCE_LIST = 0x00000008,
+                REG_QWORD = 0x0000000B,
+                REG_QWORD_LITTLE_ENDIAN = 0x0000000B
+
+
+            }
         }
 
         public class ProcessThreadsAPI
         {
             [Flags]
-            internal enum STARTF : uint
+            public enum STARTF : uint
             {
                 STARTF_USESHOWWINDOW = 0x00000001,
                 STARTF_USESIZE = 0x00000002,
@@ -955,6 +1000,6 @@ namespace DInvoke.Data
                 public UInt16 MaximumLength;
                 public IntPtr Buffer;
             }
-        }  
+        }
     }
 }

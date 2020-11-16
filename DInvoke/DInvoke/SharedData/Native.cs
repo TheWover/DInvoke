@@ -53,6 +53,21 @@ namespace DInvoke.Data
             public IntPtr SecurityQualityOfService;
         }
 
+        [Flags]
+        public enum OBJ_ATTRIBUTES : uint
+        {
+
+            INHERIT = 0x00000002,
+            PERMANENT = 0x00000010,
+            EXCLUSIVE = 0x00000020,
+            CASE_INSENSITIVE = 0x00000040,
+            OPENIF = 0x00000080,
+            OPENLINK = 0x00000100,
+            KERNEL_HANDLE = 0x00000200,
+            FORCE_ACCESS_CHECK = 0x00000400,
+        };
+
+
         [StructLayout(LayoutKind.Sequential)]
         public struct IO_STATUS_BLOCK
         {
