@@ -629,8 +629,18 @@ namespace DInvoke.DynamicInvoke
             return retvalue;
         }
 
+        public static Data.Native.NTSTATUS NTDeleteValueKey(IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName)
+        {
+            object[] funcargs =
+            {
+               keyHandle,valueName
+            };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtDeleteValueKey", typeof(DELEGATES.NtDeleteValueKey), ref funcargs);
+            return retvalue;
+        }
 
-        public static Data.Native.NTSTATUS NtClose(ref IntPtr handle)
+
+        public static Data.Native.NTSTATUS NtClose(IntPtr handle)
         {
             object[] funcargs = { handle };
             Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtClose", typeof(DELEGATES.NtClose), ref funcargs);
@@ -861,7 +871,10 @@ namespace DInvoke.DynamicInvoke
                 IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName, int titleIndex, Data.Win32.WinNT.REGISTRY_TYPES type, IntPtr Data, int DataSize);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Data.Native.NTSTATUS NtClose(ref IntPtr keyHandle);
+            public delegate Data.Native.NTSTATUS NtDeleteValueKey(IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtClose(IntPtr keyHandle);
         }
     }
 }
