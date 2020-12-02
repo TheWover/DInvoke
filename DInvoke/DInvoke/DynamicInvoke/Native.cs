@@ -14,6 +14,27 @@ namespace DInvoke.DynamicInvoke
     /// </summary>
     public class Native
     {
+        public static Data.Native.NTSTATUS NtCreateProcess(
+            ref IntPtr processHandle,
+            Data.Win32.WinNT.ACCESS_MASK desiredAccess,
+            IntPtr objectAttributes,
+            IntPtr parentProcess,
+            bool InheritObjectTable,
+            IntPtr sectionHandle,
+            IntPtr debugPort,
+            IntPtr ExceptionPort
+            )
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                processHandle,desiredAccess,objectAttributes,parentProcess,InheritObjectTable,sectionHandle,
+                debugPort,ExceptionPort
+            };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateProcess", typeof(DELEGATES.NTCreateProcess), ref funcargs);
+            processHandle = (IntPtr)funcargs[0];
+            return retvalue;
+        }
         public static Data.Native.NTSTATUS NtCreateThreadEx(
             ref IntPtr threadHandle,
             Data.Win32.WinNT.ACCESS_MASK desiredAccess,
@@ -58,7 +79,7 @@ namespace DInvoke.DynamicInvoke
             // Craft an array for the arguments
             object[] funcargs =
             {
-                Process, ThreadSecurityDescriptor, CreateSuspended, ZeroBits, 
+                Process, ThreadSecurityDescriptor, CreateSuspended, ZeroBits,
                 MaximumStackSize, CommittedStackSize, StartAddress, Parameter,
                 Thread, ClientId
             };
@@ -95,8 +116,8 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Update the modified variables
-            SectionHandle = (IntPtr) funcargs[0];
-            MaximumSize = (ulong) funcargs[3];
+            SectionHandle = (IntPtr)funcargs[0];
+            MaximumSize = (ulong)funcargs[3];
 
             return retValue;
         }
@@ -142,8 +163,8 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Update the modified variables.
-            BaseAddress = (IntPtr) funcargs[2];
-            ViewSize = (ulong) funcargs[6];
+            BaseAddress = (IntPtr)funcargs[2];
+            ViewSize = (ulong)funcargs[6];
 
             return retValue;
         }
@@ -583,6 +604,51 @@ namespace DInvoke.DynamicInvoke
             return FileHandle;
         }
 
+        public static Data.Native.NTSTATUS NtOpenKey(
+            ref IntPtr keyHandle,
+            Data.Win32.WinNT.ACCESS_MASK desiredAccess,
+            ref Data.Win32.WinNT.OBJECT_ATTRIBUTES objectAttributes)
+        {
+            object[] funcargs =
+            {
+                keyHandle,desiredAccess,objectAttributes
+            };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenKey", typeof(DELEGATES.NtOpenKey), ref funcargs);
+            keyHandle = (IntPtr)funcargs[0];
+            return retvalue;
+        }
+
+
+        public static Data.Native.NTSTATUS NtSetValueKey(IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName, int titleIndex, Data.Win32.WinNT.REGISTRY_TYPES type, IntPtr data, int dataSize)
+        {
+            object[] funcargs =
+            {
+                keyHandle,valueName,titleIndex,type,data,dataSize
+            };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtSetValueKey", typeof(DELEGATES.NtSetValueKey), ref funcargs);
+            return retvalue;
+        }
+
+        public static Data.Native.NTSTATUS NTDeleteValueKey(IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName)
+        {
+            object[] funcargs =
+            {
+               keyHandle,valueName
+            };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtDeleteValueKey", typeof(DELEGATES.NtDeleteValueKey), ref funcargs);
+            return retvalue;
+        }
+
+
+        public static Data.Native.NTSTATUS NtClose(IntPtr handle)
+        {
+            object[] funcargs = { handle };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtClose", typeof(DELEGATES.NtClose), ref funcargs);
+            return retvalue;
+        }
+
+
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -605,6 +671,17 @@ namespace DInvoke.DynamicInvoke
         /// </example>
         public struct DELEGATES
         {
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NTCreateProcess(
+                  ref IntPtr processHandle,
+            Data.Win32.WinNT.ACCESS_MASK desiredAccess,
+            IntPtr objectAttributes,
+            IntPtr parentProcess,
+            bool InheritObjectTable,
+            IntPtr sectionHandle,
+            IntPtr debugPort,
+            IntPtr ExceptionPort
+                );
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate Data.Native.NTSTATUS NtCreateThreadEx(
                 out IntPtr threadHandle,
@@ -666,7 +743,7 @@ namespace DInvoke.DynamicInvoke
                 UInt32 dwFlags,
                 ref Data.Native.UNICODE_STRING ModuleFileName,
                 ref IntPtr ModuleHandle);
-            
+
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate void RtlInitUnicodeString(
                 ref Data.Native.UNICODE_STRING DestinationString,
@@ -782,6 +859,22 @@ namespace DInvoke.DynamicInvoke
                 ref Data.Native.IO_STATUS_BLOCK IoStatusBlock,
                 Data.Win32.Kernel32.FileShareFlags ShareAccess,
                 Data.Win32.Kernel32.FileOpenFlags OpenOptions);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtOpenKey(
+               ref IntPtr keyHandle,
+               Data.Win32.WinNT.ACCESS_MASK desiredAccess,
+               ref Data.Win32.WinNT.OBJECT_ATTRIBUTES objectAttributes);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtSetValueKey(
+                IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName, int titleIndex, Data.Win32.WinNT.REGISTRY_TYPES type, IntPtr Data, int DataSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtDeleteValueKey(IntPtr keyHandle, ref Data.Native.UNICODE_STRING valueName);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtClose(IntPtr keyHandle);
         }
     }
 }
