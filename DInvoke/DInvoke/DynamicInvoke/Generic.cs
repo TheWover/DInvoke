@@ -191,12 +191,10 @@ namespace DInvoke.DynamicInvoke
             Data.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
 
             // Set function variables
-            bool Is32Bit = false;
             UInt32 LdrDataOffset = 0;
             UInt32 InLoadOrderModuleListOffset = 0;
             if (IntPtr.Size == 4)
             {
-                Is32Bit = true;
                 LdrDataOffset = 0xc;
                 InLoadOrderModuleListOffset = 0xC;
             }
