@@ -592,7 +592,7 @@ namespace DInvoke.DynamicInvoke
         /// <summary>
         /// Resolve host DLL for API Set DLL.
         /// </summary>
-        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <author>Ruben Boonen (@FuzzySec), The Wover (@TheRealWover)</author>
         /// <returns>Dictionary, a combination of Key:APISetDLL and Val:HostDLL.</returns>
         public static Dictionary<string, string> GetApiSetMapping()
         {
@@ -607,16 +607,42 @@ namespace DInvoke.DynamicInvoke
             for (var i = 0; i < Namespace.Count; i++)
             {
                 Data.PE.ApiSetNamespaceEntry SetEntry = new Data.PE.ApiSetNamespaceEntry();
-                SetEntry = (Data.PE.ApiSetNamespaceEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry))), typeof(Data.PE.ApiSetNamespaceEntry));
+                IntPtr pSetEntry = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry)));
+                SetEntry = (Data.PE.ApiSetNamespaceEntry)Marshal.PtrToStructure(pSetEntry, typeof(Data.PE.ApiSetNamespaceEntry));
                 string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2);
                 string ApiSetEntryKey = ApiSetEntryName.Substring(0, ApiSetEntryName.Length - 2) + ".dll" ; // Remove the patch number and add .dll
 
                 Data.PE.ApiSetValueEntry SetValue = new Data.PE.ApiSetValueEntry();
-                SetValue = (Data.PE.ApiSetValueEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset), typeof(Data.PE.ApiSetValueEntry));
+
+                IntPtr pSetValue = IntPtr.Zero;
+
+                if (SetEntry.ValueLength == 1)
+                    pSetValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset);
+                else if (SetEntry.ValueLength > 1)
+                {
+                    // Loop through the hosts until we find one that is different from the key, if available
+                    for (var j = 0; j < SetEntry.ValueLength; j++)
+                    {
+                        IntPtr host = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset + (UInt64)Marshal.SizeOf(SetValue) * (UInt64)j);
+                        if (Marshal.PtrToStringUni(host) != ApiSetEntryName)
+                            pSetValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset + (UInt64)Marshal.SizeOf(SetValue) * (UInt64)j);
+                    }
+                    // If there is not one different from the key, then just use the key and hope that works
+                    if (pSetValue == IntPtr.Zero)
+                        pSetValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset);
+                }
+
+                SetValue = (Data.PE.ApiSetValueEntry)Marshal.PtrToStructure(pSetValue, typeof(Data.PE.ApiSetValueEntry));
                 string ApiSetValue = string.Empty;
+                if (ApiSetEntryName.Contains("processthreads"))
+                {
+                    IntPtr pValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset);
+                }
+
                 if (SetValue.ValueCount != 0)
                 {
-                    ApiSetValue = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset), SetValue.ValueCount/2);
+                    IntPtr pValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset);
+                    ApiSetValue = Marshal.PtrToStringUni(pValue, SetValue.ValueCount/2);
                 }
 
                 // Add pair to dict
