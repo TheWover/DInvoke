@@ -609,6 +609,7 @@ namespace DInvoke.DynamicInvoke
                 Data.PE.ApiSetNamespaceEntry SetEntry = new Data.PE.ApiSetNamespaceEntry();
                 IntPtr pSetEntry = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry)));
                 SetEntry = (Data.PE.ApiSetNamespaceEntry)Marshal.PtrToStructure(pSetEntry, typeof(Data.PE.ApiSetNamespaceEntry));
+
                 string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2);
                 string ApiSetEntryKey = ApiSetEntryName.Substring(0, ApiSetEntryName.Length - 2) + ".dll" ; // Remove the patch number and add .dll
 
@@ -616,6 +617,7 @@ namespace DInvoke.DynamicInvoke
 
                 IntPtr pSetValue = IntPtr.Zero;
 
+                // If there is only one host, then use it
                 if (SetEntry.ValueLength == 1)
                     pSetValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset);
                 else if (SetEntry.ValueLength > 1)
@@ -632,13 +634,9 @@ namespace DInvoke.DynamicInvoke
                         pSetValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset);
                 }
 
+                //Get the host DLL's name from the entry
                 SetValue = (Data.PE.ApiSetValueEntry)Marshal.PtrToStructure(pSetValue, typeof(Data.PE.ApiSetValueEntry));
                 string ApiSetValue = string.Empty;
-                if (ApiSetEntryName.Contains("processthreads"))
-                {
-                    IntPtr pValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset);
-                }
-
                 if (SetValue.ValueCount != 0)
                 {
                     IntPtr pValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset);
