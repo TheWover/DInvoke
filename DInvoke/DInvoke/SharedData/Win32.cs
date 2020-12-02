@@ -542,9 +542,9 @@ namespace DInvoke.Data
             [StructLayout(LayoutKind.Sequential)]
             public struct _SECURITY_ATTRIBUTES
             {
-                UInt32 nLength;
-                IntPtr lpSecurityDescriptor;
-                Boolean bInheritHandle;
+                public UInt32 nLength;
+                public IntPtr lpSecurityDescriptor;
+                public Boolean bInheritHandle;
             };
         }
 
@@ -827,7 +827,7 @@ namespace DInvoke.Data
         public class ProcessThreadsAPI
         {
             [Flags]
-            internal enum STARTF : uint
+            public enum STARTF : uint
             {
                 STARTF_USESHOWWINDOW = 0x00000001,
                 STARTF_USESIZE = 0x00000002,
@@ -868,8 +868,8 @@ namespace DInvoke.Data
             [StructLayout(LayoutKind.Sequential)]
             public struct _STARTUPINFOEX
             {
-                _STARTUPINFO StartupInfo;
-                // PPROC_THREAD_ATTRIBUTE_LIST lpAttributeList;
+                public _STARTUPINFO StartupInfo;
+                public IntPtr lpAttributeList;
             };
 
             //https://msdn.microsoft.com/en-us/library/windows/desktop/ms684873(v=vs.85).aspx
