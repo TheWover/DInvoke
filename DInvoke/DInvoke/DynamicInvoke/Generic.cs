@@ -27,10 +27,12 @@ namespace DInvoke.DynamicInvoke
         /// <param name="FunctionName">Name of the function.</param>
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <param name="CanLoadFromDisk">Whether the DLL may be loaded from disk if it is not already loaded. Default is false.</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
-        public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
+        public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters, bool CanLoadFromDisk = false, bool ResolveForwards = true)
         {
-            IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName);
+            IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName, CanLoadFromDisk, ResolveForwards);
             return DynamicFunctionInvoke(pFunction, FunctionDelegateType, ref Parameters);
         }
 
@@ -76,8 +78,9 @@ namespace DInvoke.DynamicInvoke
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
         /// <param name="FunctionName">Name of the exported procedure.</param>
         /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false, bool ResolveForwards = false)
+        public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false, bool ResolveForwards = true)
         {
             IntPtr hModule = GetLoadedModuleAddress(DLLName);
             if (hModule == IntPtr.Zero && CanLoadFromDisk)
@@ -103,8 +106,9 @@ namespace DInvoke.DynamicInvoke
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
         /// <param name="Ordinal">Ordinal of the exported procedure.</param>
         /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetLibraryAddress(string DLLName, short Ordinal, bool CanLoadFromDisk = false, bool ResolveForwards = false)
+        public static IntPtr GetLibraryAddress(string DLLName, short Ordinal, bool CanLoadFromDisk = false, bool ResolveForwards = true)
         {
             IntPtr hModule = GetLoadedModuleAddress(DLLName);
             if (hModule == IntPtr.Zero && CanLoadFromDisk)
@@ -131,8 +135,9 @@ namespace DInvoke.DynamicInvoke
         /// <param name="FunctionHash">Hash of the exported procedure.</param>
         /// <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
         /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetLibraryAddress(string DLLName, string FunctionHash, long Key, bool CanLoadFromDisk = false, bool ResolveForwards = false)
+        public static IntPtr GetLibraryAddress(string DLLName, string FunctionHash, long Key, bool CanLoadFromDisk = false, bool ResolveForwards = true)
         {
             IntPtr hModule = GetLoadedModuleAddress(DLLName);
             if (hModule == IntPtr.Zero && CanLoadFromDisk)
@@ -251,8 +256,9 @@ namespace DInvoke.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
         /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName, bool ResolveForwards = false)
+        public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName, bool ResolveForwards = true)
         {
             IntPtr FunctionPtr = IntPtr.Zero;
             try
@@ -325,8 +331,9 @@ namespace DInvoke.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
         /// <param name="Ordinal">The ordinal number to search for (e.g. 0x136 -> ntdll!NtCreateThreadEx).</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetExportAddress(IntPtr ModuleBase, short Ordinal, bool ResolveForwards = false)
+        public static IntPtr GetExportAddress(IntPtr ModuleBase, short Ordinal, bool ResolveForwards = true)
         {
             IntPtr FunctionPtr = IntPtr.Zero;
             try
@@ -393,8 +400,9 @@ namespace DInvoke.DynamicInvoke
         /// <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
         /// <param name="FunctionHash">Hash of the exported procedure.</param>
         /// <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
+        /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetExportAddress(IntPtr ModuleBase, string FunctionHash, long Key, bool ResolveForwards = false)
+        public static IntPtr GetExportAddress(IntPtr ModuleBase, string FunctionHash, long Key, bool ResolveForwards = true)
         {
             IntPtr FunctionPtr = IntPtr.Zero;
             try
