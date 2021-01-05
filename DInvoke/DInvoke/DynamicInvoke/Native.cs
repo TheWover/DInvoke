@@ -58,7 +58,7 @@ namespace DInvoke.DynamicInvoke
             // Craft an array for the arguments
             object[] funcargs =
             {
-                Process, ThreadSecurityDescriptor, CreateSuspended, ZeroBits, 
+                Process, ThreadSecurityDescriptor, CreateSuspended, ZeroBits,
                 MaximumStackSize, CommittedStackSize, StartAddress, Parameter,
                 Thread, ClientId
             };
@@ -95,8 +95,8 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Update the modified variables
-            SectionHandle = (IntPtr) funcargs[0];
-            MaximumSize = (ulong) funcargs[3];
+            SectionHandle = (IntPtr)funcargs[0];
+            MaximumSize = (ulong)funcargs[3];
 
             return retValue;
         }
@@ -142,8 +142,8 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Update the modified variables.
-            BaseAddress = (IntPtr) funcargs[2];
-            ViewSize = (ulong) funcargs[6];
+            BaseAddress = (IntPtr)funcargs[2];
+            ViewSize = (ulong)funcargs[6];
 
             return retValue;
         }
@@ -583,6 +583,55 @@ namespace DInvoke.DynamicInvoke
             return FileHandle;
         }
 
+        public static Data.Native.NTSTATUS NtOpenKey(
+            ref IntPtr keyHandle,
+            Data.Native.REG_ACCESS_MASK desiredAccess,
+            ref Data.Native.OBJECT_ATTRIBUTES objectAttributes)
+        {
+            object[] funcargs =
+            {
+                keyHandle,desiredAccess,objectAttributes
+            };
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenKey", typeof(DELEGATES.NtOpenKey), ref funcargs);
+            keyHandle = (IntPtr)funcargs[0];
+            return retvalue;
+        }
+
+        public static Data.Native.NTSTATUS NtQueryValueKey(
+            IntPtr keyHandle,
+            Data.Native.UNICODE_STRING UC_RegKeyValueName,
+            Data.Native.KEY_INFORMATION_CLASS KeyInformationClass,
+            ref IntPtr KeyInformation,
+            int DataSize,
+            ref int DataSizeResult)
+        {
+
+            object[] funcargs =
+            {
+                keyHandle,UC_RegKeyValueName,KeyInformationClass,KeyInformation,DataSize,DataSizeResult
+            };
+
+            Data.Native.NTSTATUS retvalue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryValueKey", typeof(DELEGATES.NtQueryValueKey), ref funcargs);
+            KeyInformation = (IntPtr)funcargs[3];
+            DataSizeResult = (int)funcargs[5];
+
+            return retvalue;
+        }
+
+        public static void RtlMoveMemory(
+                byte[] Destination,
+                IntPtr Source,
+                int Length)
+        {
+            object[] funcargs =
+            {
+                Destination,Source,Length
+            };
+
+            Generic.DynamicAPIInvoke(@"ntdll.dll", @"RtlMoveMemory", typeof(DELEGATES.RtlMoveMemory), ref funcargs);
+        }
+
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -782,6 +831,27 @@ namespace DInvoke.DynamicInvoke
                 ref Data.Native.IO_STATUS_BLOCK IoStatusBlock,
                 Data.Win32.Kernel32.FileShareFlags ShareAccess,
                 Data.Win32.Kernel32.FileOpenFlags OpenOptions);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtOpenKey(
+              ref IntPtr keyHandle,
+              Data.Native.REG_ACCESS_MASK desiredAccess,
+              ref Data.Native.OBJECT_ATTRIBUTES objectAttributes);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtQueryValueKey(
+            IntPtr keyHandle,
+            ref Data.Native.UNICODE_STRING valueName,
+            Data.Native.KEY_INFORMATION_CLASS KeyValueInformationClass,
+            IntPtr KeyValueInformation,
+            int DataSize,
+            ref int ResultSize);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate void RtlMoveMemory(
+                byte[] Destination,
+                IntPtr Source,
+                int Length);
         }
     }
 }

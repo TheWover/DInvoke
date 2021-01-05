@@ -42,6 +42,51 @@ namespace DInvoke.Data
             }
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct KEY_VALUE_BASIC_INFORMATION
+        {
+            public ulong TitleIndex;
+            public ulong Type;
+            public ulong NameLength;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 300)]
+            public string Name;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct KEY_VALUE_PARTIAL_INFORMATION
+        {
+            public long TitleIndex;
+            public long Type;
+            public ulong DataLength;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 300)]
+            public string Data;
+        }
+
+        public enum KEY_INFORMATION_CLASS
+        {
+            KeyBasicInformation = 0,
+            KeyFullInformation = 1,
+            KeyPartialInformation = 2,
+            KeyValueFullInformationAlign64 = 3,
+            KeyValuePartialInformationAlign64 = 4,
+            KeyValueLayerInformation = 5,
+            MaxKeyValueInfoClass = 6
+        }
+
+        [Flags]
+        public enum OBJ_ATTRIBUTES : uint
+        {
+
+            INHERIT = 0x00000002,
+            PERMANENT = 0x00000010,
+            EXCLUSIVE = 0x00000020,
+            CASE_INSENSITIVE = 0x00000040,
+            OPENIF = 0x00000080,
+            OPENLINK = 0x00000100,
+            KERNEL_HANDLE = 0x00000200,
+            FORCE_ACCESS_CHECK = 0x00000400,
+        };
+
         [StructLayout(LayoutKind.Sequential, Pack = 0)]
         public struct OBJECT_ATTRIBUTES
         {
@@ -522,6 +567,67 @@ namespace DInvoke.Data
             TransactionsNotFrozen = 0xc0190045,
 
             MaximumNtStatus = 0xffffffff
+        }
+
+        [Flags]
+        public enum REG_ACCESS_MASK : uint
+        {
+            DELETE = 0x00010000,
+            READ_CONTROL = 0x00020000,
+            WRITE_DAC = 0x00040000,
+            WRITE_OWNER = 0x00080000,
+            SYNCHRONIZE = 0x00100000,
+            STANDARD_RIGHTS_REQUIRED = 0x000F0000,
+            STANDARD_RIGHTS_READ = 0x00020000,
+            STANDARD_RIGHTS_WRITE = 0x00020000,
+            STANDARD_RIGHTS_EXECUTE = 0x00020000,
+            STANDARD_RIGHTS_ALL = 0x001F0000,
+            SPECIFIC_RIGHTS_ALL = 0x0000FFF,
+            ACCESS_SYSTEM_SECURITY = 0x01000000,
+            MAXIMUM_ALLOWED = 0x02000000,
+            GENERIC_READ = 0x80000000,
+            GENERIC_WRITE = 0x40000000,
+            GENERIC_EXECUTE = 0x20000000,
+            GENERIC_ALL = 0x10000000,
+            DESKTOP_READOBJECTS = 0x00000001,
+            DESKTOP_CREATEWINDOW = 0x00000002,
+            DESKTOP_CREATEMENU = 0x00000004,
+            DESKTOP_HOOKCONTROL = 0x00000008,
+            DESKTOP_JOURNALRECORD = 0x00000010,
+            DESKTOP_JOURNALPLAYBACK = 0x00000020,
+            DESKTOP_ENUMERATE = 0x00000040,
+            DESKTOP_WRITEOBJECTS = 0x00000080,
+            DESKTOP_SWITCHDESKTOP = 0x00000100,
+            WINSTA_ENUMDESKTOPS = 0x00000001,
+            WINSTA_READATTRIBUTES = 0x00000002,
+            WINSTA_ACCESSCLIPBOARD = 0x00000004,
+            WINSTA_CREATEDESKTOP = 0x00000008,
+            WINSTA_WRITEATTRIBUTES = 0x00000010,
+            WINSTA_ACCESSGLOBALATOMS = 0x00000020,
+            WINSTA_EXITWINDOWS = 0x00000040,
+            WINSTA_ENUMERATE = 0x00000100,
+            WINSTA_READSCREEN = 0x00000200,
+            WINSTA_ALL_ACCESS = 0x0000037F,
+
+            SECTION_ALL_ACCESS = 0x10000000,
+            SECTION_QUERY = 0x0001,
+            SECTION_MAP_WRITE = 0x0002,
+            SECTION_MAP_READ = 0x0004,
+            SECTION_MAP_EXECUTE = 0x0008,
+            SECTION_EXTEND_SIZE = 0x0010,
+
+            KEY_ALL_ACCESS = 0xF003F,
+            KEY_CREATE_LINK = 0x0020,
+            KEY_CREATE_SUB_KEY = 0x0004,
+            KEY_ENUMERATE_SUB_KEYS = 0x0008,
+            KEY_EXECUTE = 0x20019,
+            KEY_NOTIFY = 0x0010,
+            KEY_QUERY_VALUE = 0x0001,
+            KEY_READ = 0x20019,
+            KEY_SET_VALUE = 0x0002,
+            KEY_WOW64_32KEY = 0x0200,
+            KEY_WOW64_64KEY = 0x0100,
+            KEY_WRITE = 0x20006
         }
     }
 }
