@@ -77,8 +77,124 @@ namespace DInvoke.DynamicInvoke
             return retVal;
         }
 
+        /// <summary>
+        /// Uses DynamicInvocation to call the WTSOpenServerA Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsopenservera
+        /// </summary>
+        /// <returns>Returns a pointer to the local or remote session.</returns>
+        public static IntPtr WTSOpenServerA(string pServerName)
+        {
+
+            // Build the set of parameters to pass in to WTSOpenServerA
+            object[] funcargs =
+            {
+                pServerName
+            };
+
+            Generic.GetLibraryAddress(@"C:\Windows\System32\wtsapi32.dll", "WTSOpenServerA", true, true);
+            IntPtr hServer = (IntPtr)Generic.DynamicAPIInvoke(@"wtsapi32.dll", @"WTSOpenServerA", typeof(Delegates.WTSOpenServerA), ref funcargs);
+
+            return hServer;
+        }
+
+        /// <summary>
+        /// Uses DynamicInvocation to call the WTSEnumerateSessionsA Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsenumeratesessionsa
+        /// </summary>
+        /// <returns>Returns true or false after enumerating the sessions.</returns>
+        public static bool WTSEnumerateSessionsA(
+            IntPtr hServer,
+            int Reserved,
+            int Version,
+            ref IntPtr ppSessionInfo,
+            ref int pCount)
+        {
+
+            // Build the set of parameters to pass in to WTSEnumerateSessionsA
+            object[] funcargs =
+            {
+                IntPtr.Zero,0,1,ppSessionInfo,pCount
+            };
+
+            Generic.GetLibraryAddress(@"C:\Windows\System32\wtsapi32.dll", "WTSEnumerateSessionsA", true, true);
+            bool res = (bool)Generic.DynamicAPIInvoke(@"wtsapi32.dll", @"WTSEnumerateSessionsA", typeof(Delegates.WTSEnumerateSessionsA), ref funcargs);
+
+            ppSessionInfo = (IntPtr)funcargs[3];
+            pCount = (int)funcargs[4];
+
+            return res;
+        }
+
+        /// <summary>
+        /// Uses DynamicInvocation to call the WTSDisconnectSession Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-WTSDisconnectSession
+        /// </summary>
+        /// <returns>Returns true or false after disconnecting the target session.</returns>
+        public static bool WTSDisconnectSession(
+            IntPtr hServer, 
+            int SessionId, 
+            bool Wait)
+        {
+
+            // Build the set of parameters to pass in to WTSDisconnectSession
+            object[] funcargs =
+            {
+                hServer,SessionId,Wait
+            };
+
+            Generic.GetLibraryAddress(@"C:\Windows\System32\wtsapi32.dll", "WTSDisconnectSession", true, true);
+            bool res = (bool)Generic.DynamicAPIInvoke(@"wtsapi32.dll", @"WTSDisconnectSession", typeof(Delegates.WTSDisconnectSession), ref funcargs);
+
+            return res;
+        }
+
+        /// <summary>
+        /// Uses DynamicInvocation to call the WTSConnectSessionA Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-WTSConnectSessiona
+        /// </summary>
+        /// <returns>Returns true or false after opening the target session.</returns>
+        public static bool WTSConnectSession(
+            int TargetSessionId,
+            int SourceSessionId,
+            string Password,
+            bool Wait)
+        {
+
+            // Build the set of parameters to pass in to WTSConnectSessionA
+            object[] funcargs =
+            {
+                TargetSessionId,SourceSessionId,Password,Wait
+            };
+
+            Generic.GetLibraryAddress(@"C:\Windows\System32\wtsapi32.dll", "WTSConnectSessionA", true, true);
+            bool res = (bool)Generic.DynamicAPIInvoke(@"wtsapi32.dll", @"WTSConnectSessionA", typeof(Delegates.WTSConnectSession), ref funcargs);
+
+            return res;
+        }
+
         public static class Delegates
         {
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool WTSConnectSession(
+                    int targetSessionId,
+                    int sourceSessionId,
+                    string password,
+                    bool wait);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool WTSDisconnectSession(
+                IntPtr hServer,
+                int sessionId,
+                bool bWait);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate IntPtr WTSOpenServerA(
+                string pServerName);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool WTSEnumerateSessionsA(
+                IntPtr hServer,
+                int Reserved,
+                int Version,
+                ref IntPtr ppSessionInfo,
+                ref int pCount);
+
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate IntPtr CreateRemoteThread(IntPtr hProcess,
                 IntPtr lpThreadAttributes,

@@ -15,6 +15,39 @@ namespace DInvoke.Data
     /// </remarks>
     public static class Win32
     {
+        public static class wtsapi32
+        {
+            [StructLayout(LayoutKind.Sequential)]
+            public struct WTS_SESSION_INFO
+            {
+                public int SessionId;
+                public IntPtr pWinStationName;
+                public WTS_CONNECTSTATE_CLASS State;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct WTS_PROCESS_INFO
+            {
+                public int SessionId;
+                public int ProcessId;
+                public string pProcessName;
+                public IntPtr pUserSid;
+            }
+
+            public enum WTS_CONNECTSTATE_CLASS
+            {
+                WTSActive,              // User logged on to WinStation
+                WTSConnected,           // WinStation connected to client
+                WTSConnectQuery,        // In the process of connecting to client
+                WTSShadow,              // Shadowing another WinStation
+                WTSDisconnected,        // WinStation logged on without client
+                WTSIdle,                // Waiting for client to connect
+                WTSListen,              // WinStation is listening for connection
+                WTSReset,               // WinStation is being reset
+                WTSDown,                // WinStation is down due to error
+                WTSInit,                // WinStation in initialization
+            }
+        }
         public static class Kernel32
         {
             public static uint MEM_COMMIT = 0x1000;
