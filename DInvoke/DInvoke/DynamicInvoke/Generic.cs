@@ -466,8 +466,9 @@ namespace DInvoke.DynamicInvoke
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="ExportAddress">Function of an exported address, found by parsing a PE file's export table.</param>
+        /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
         /// <returns>IntPtr for the forward. If the function is not forwarded, return the original pointer.</returns>
-        public static IntPtr GetForwardAddress(IntPtr ExportAddress)
+        public static IntPtr GetForwardAddress(IntPtr ExportAddress, bool CanLoadFromDisk = false)
         {
             IntPtr FunctionPtr = ExportAddress;
             try
@@ -476,21 +477,26 @@ namespace DInvoke.DynamicInvoke
                 string ForwardNames = Marshal.PtrToStringAnsi(FunctionPtr);
                 string[] values = ForwardNames.Split('.');
 
-                string ForwardModuleName = values[0];
-                string ForwardExportName = values[1];
-                
-                // Check if it is an API Set mapping
-                Dictionary<string, string> ApiSet = GetApiSetMapping();
-                string LookupKey = ForwardModuleName.Substring(0, ForwardModuleName.Length - 2) + ".dll";
-                if (ApiSet.ContainsKey(LookupKey))
-                    ForwardModuleName = ApiSet[LookupKey];
-                else
-                    ForwardModuleName = ForwardModuleName + ".dll";
-
-                IntPtr hModule = GetPebLdrModuleEntry(ForwardModuleName);
-                if (hModule != IntPtr.Zero)
+                if (values.Length > 1)
                 {
-                    FunctionPtr = GetExportAddress(hModule, ForwardExportName);
+                    string ForwardModuleName = values[0];
+                    string ForwardExportName = values[1];
+
+                    // Check if it is an API Set mapping
+                    Dictionary<string, string> ApiSet = GetApiSetMapping();
+                    string LookupKey = ForwardModuleName.Substring(0, ForwardModuleName.Length - 2) + ".dll";
+                    if (ApiSet.ContainsKey(LookupKey))
+                        ForwardModuleName = ApiSet[LookupKey];
+                    else
+                        ForwardModuleName = ForwardModuleName + ".dll";
+
+                    IntPtr hModule = GetPebLdrModuleEntry(ForwardModuleName);
+                    if (hModule == IntPtr.Zero && CanLoadFromDisk == true)
+                        hModule = LoadModuleFromDisk(ForwardModuleName);
+                    if (hModule != IntPtr.Zero)
+                    {
+                        FunctionPtr = GetExportAddress(hModule, ForwardExportName);
+                    }
                 }
             }
             catch
