@@ -87,33 +87,6 @@ namespace DInvoke.ManualMap
         }
 
         /// <summary>
-        /// Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
-        /// module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
-        /// </summary>
-        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-        /// <param name="Payload">Full byte array for the payload module.</param>
-        /// <param name="DllPath">Optional, full path the decoy module to overload in memory.</param>
-        /// <returns>PE.PE_MANUAL_MAP</returns>
-        public static Data.PE.PE_MANUAL_MAP MapModuleFromDisk(byte[] Payload, string DllPath)
-        {
-            // Map decoy from disk
-            Data.PE.PE_MANUAL_MAP MetaData = Map.MapModuleFromDiskToSection(DllPath);
-            IntPtr RegionSize = MetaData.PEINFO.Is32Bit ? (IntPtr)MetaData.PEINFO.OptHeader32.SizeOfImage : (IntPtr)MetaData.PEINFO.OptHeader64.SizeOfImage;
-
-            // Change permissions to RW
-            DynamicInvoke.Native.NtProtectVirtualMemory((IntPtr)(-1), ref MetaData.ModuleBase, ref RegionSize, Data.Win32.WinNT.PAGE_READWRITE);
-
-            // Zero out memory
-            DynamicInvoke.Native.RtlZeroMemory(MetaData.ModuleBase, (int)RegionSize);
-
-            // Overload module in memory
-            Data.PE.PE_MANUAL_MAP OverloadedModuleMetaData = Map.MapModuleToMemory(Payload, MetaData.ModuleBase);
-            OverloadedModuleMetaData.DecoyModule = DllPath;
-
-            return OverloadedModuleMetaData;
-        }
-
-        /// <summary>
         /// Allocate file to memory from disk
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
