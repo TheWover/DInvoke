@@ -77,6 +77,25 @@ namespace DInvoke.DynamicInvoke
             return retVal;
         }
 
+        /// <summary>
+        /// Uses DynamicInvocation to call the CloseHandle Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+        /// </summary>
+        /// <returns></returns>
+        public static bool CloseHandle(IntPtr handle)
+        {
+
+            // Build the set of parameters to pass in to CloseHandle
+            object[] funcargs =
+            {
+                handle
+            };
+
+            bool retVal = (bool)Generic.DynamicAPIInvoke(@"kernel32.dll", @"CloseHandle", typeof(Delegates.CloseHandle), ref funcargs);
+
+            // Dynamically load and invoke the API call with out parameters
+            return retVal;
+        }
+
         public static class Delegates
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -98,6 +117,11 @@ namespace DInvoke.DynamicInvoke
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate bool IsWow64Process(
                 IntPtr hProcess, ref bool lpSystemInfo
+            );
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool CloseHandle(
+                IntPtr handle
             );
         }
     }
