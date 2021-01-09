@@ -117,7 +117,7 @@ namespace DInvoke.ManualMap
             }
 
             // Map decoy from disk
-            Data.PE.PE_MANUAL_MAP DecoyMetaData = Map.MapModuleFromDisk(DecoyModulePath);
+            Data.PE.PE_MANUAL_MAP DecoyMetaData = Map.MapModuleFromDiskToSection(DecoyModulePath);
             IntPtr RegionSize = DecoyMetaData.PEINFO.Is32Bit ? (IntPtr)DecoyMetaData.PEINFO.OptHeader32.SizeOfImage : (IntPtr)DecoyMetaData.PEINFO.OptHeader64.SizeOfImage;
 
             // Change permissions to RW
