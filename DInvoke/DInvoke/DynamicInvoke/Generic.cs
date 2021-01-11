@@ -689,7 +689,7 @@ namespace DInvoke.DynamicInvoke
         /// <summary>
         /// Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
         /// </summary>
-        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <author>Ruben Boonen (@FuzzySec), TheWover (@TheRealWover)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
         /// <returns>void</returns>
@@ -697,12 +697,22 @@ namespace DInvoke.DynamicInvoke
         {
             IntPtr lpEntryPoint = PEINFO.Is32Bit ? (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint) :
                                                    (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
-
-            Data.PE.DllMain fDllMain = (Data.PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(Data.PE.DllMain));
-            bool CallRes = fDllMain(ModuleMemoryBase, Data.PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
-            if (!CallRes)
+            // If there is an entry point, call it
+            if (lpEntryPoint != ModuleMemoryBase)
             {
-                throw new InvalidOperationException("Failed to call DllMain -> DLL_PROCESS_ATTACH");
+                Data.PE.DllMain fDllMain = (Data.PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(Data.PE.DllMain));
+                try
+                {
+                    bool CallRes = fDllMain(ModuleMemoryBase, Data.PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
+                    if (!CallRes)
+                    {
+                        throw new InvalidOperationException("Call to entry point failed -> DLL_PROCESS_ATTACH");
+                    }
+                }
+                catch
+                {
+                    throw new InvalidOperationException("Invalid entry point -> DLL_PROCESS_ATTACH");
+                }
             }
         }
 
