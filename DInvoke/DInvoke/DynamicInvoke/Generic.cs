@@ -675,7 +675,7 @@ namespace DInvoke.DynamicInvoke
             IntPtr pModule = ManualMap.Map.AllocateFileToMemory(NtdllPath);
 
             // Fetch PE meta data
-            PE.PE_META_DATA PEINFO = GetPeMetaData(pModule);
+            Data.PE.PE_META_DATA PEINFO = GetPeMetaData(pModule);
 
             // Alloc PE image memory -> RW
             IntPtr BaseAddress = IntPtr.Zero;
