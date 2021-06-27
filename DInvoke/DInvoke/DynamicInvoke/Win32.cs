@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace DInvoke.DynamicInvoke
 {
@@ -79,6 +80,8 @@ namespace DInvoke.DynamicInvoke
 
         public static class Delegates
         {
+            // Kernel32.dll
+
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate IntPtr CreateRemoteThread(IntPtr hProcess,
                 IntPtr lpThreadAttributes,
@@ -99,6 +102,241 @@ namespace DInvoke.DynamicInvoke
             public delegate bool IsWow64Process(
                 IntPtr hProcess, ref bool lpSystemInfo
             );
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean CloseHandle(IntPtr hProcess);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate IntPtr GetCurrentThread();
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate UInt32 SearchPath(String lpPath, String lpFileName, String lpExtension, UInt32 nBufferLength, StringBuilder lpBuffer, ref IntPtr lpFilePart);
+
+            //Advapi32.dll
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean OpenProcessToken(IntPtr hProcess, UInt32 dwDesiredAccess, out IntPtr hToken);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean SetThreadToken(IntPtr ThreadHandle, IntPtr TokenHandle);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean DuplicateTokenEx(IntPtr hExistingToken, UInt32 dwDesiredAccess, IntPtr lpTokenAttributes, _SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, _TOKEN_TYPE TokenType, out IntPtr phNewToken);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean ImpersonateLoggedOnUser(IntPtr hToken);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean OpenThreadToken(IntPtr ThreadHandle, UInt32 DesiredAccess, Boolean OpenAsSelf, ref IntPtr TokenHandle);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean ImpersonateSelf(_SECURITY_IMPERSONATION_LEVEL ImpersonationLevel);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean LookupPrivilegeValueA(String lpSystemName, String lpName, ref _LUID luid);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean AdjustTokenPrivileges(IntPtr TokenHandle, Boolean DisableAllPrivileges, ref _TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, ref _TOKEN_PRIVILEGES PreviousState, out UInt32 ReturnLengthInBytes);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean LookupPrivilegeName(String lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref Int32 cchName);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean GetTokenInformation(IntPtr TokenHandle, _TOKEN_INFORMATION_CLASS TokenInformationClass, IntPtr TokenInformation, UInt32 TokenInformationLength, out UInt32 ReturnLength);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean PrivilegeCheck(IntPtr ClientToken, _PRIVILEGE_SET RequiredPrivileges, IntPtr pfResult);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate bool LookupAccountSidA(String lpSystemName, IntPtr Sid, StringBuilder lpName, ref UInt32 cchName, StringBuilder ReferencedDomainName, ref UInt32 cchReferencedDomainName, out _SID_NAME_USE peUse);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate bool ConvertSidToStringSidA(IntPtr Sid, ref IntPtr StringSid);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean LookupPrivilegeNameA(String lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref Int32 cchName);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate bool CreateProcessWithTokenW(IntPtr hToken, LogonFlags dwLogonFlags, Byte[] lpApplicationName, Byte[] lpCommandLine, CreationFlags dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref _STARTUPINFO lpStartupInfo, out _PROCESS_INFORMATION lpProcessInformation);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate Boolean CreateProcessWithLogonW(String lpUsername,String lpDomain,String lpPassword, LogonFlags dwLogonFlags,Byte[] lpApplicationName,Byte[] lpCommandLine,CREATION_FLAGS dwCreationFlags,IntPtr lpEnvironment,String lpCurrentDirectory,ref _STARTUPINFO lpStartupInfo,out _PROCESS_INFORMATION lpProcessInformation);
+            
+            // Secur32.dll || sspicli.dll
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            delegate UInt32 LsaGetLogonSessionData(IntPtr LogonId, out IntPtr ppLogonSessionData);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct _LUID
+        {
+            public System.UInt32 LowPart;
+            public System.UInt32 HighPart;
+        }
+
+        //https://msdn.microsoft.com/en-us/library/windows/desktop/ms684873(v=vs.85).aspx
+        [StructLayout(LayoutKind.Sequential)]
+        public struct _PROCESS_INFORMATION
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public UInt32 dwProcessId;
+            public UInt32 dwThreadId;
+        };
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct _STARTUPINFO
+        {
+            public UInt32 cb;
+            public String lpReserved;
+            public String lpDesktop;
+            public String lpTitle;
+            public UInt32 dwX;
+            public UInt32 dwY;
+            public UInt32 dwXSize;
+            public UInt32 dwYSize;
+            public UInt32 dwXCountChars;
+            public UInt32 dwYCountChars;
+            public UInt32 dwFillAttribute;
+            public UInt32 dwFlags;
+            public UInt16 wShowWindow;
+            public UInt16 cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
+        };
+
+        [Flags]
+        public enum _TOKEN_TYPE
+        {
+            TokenPrimary = 1,
+            TokenImpersonation
+        }
+        public enum LogonFlags
+        {
+            WithProfile = 1,
+            NetCredentialsOnly = 0
+        }
+        public enum CreationFlags
+        {
+            DefaultErrorMode = 0x04000000,
+            NewConsole = 0x00000010,
+            CREATE_NO_WINDOW = 0x08000000,
+            NewProcessGroup = 0x00000200,
+            SeparateWOWVDM = 0x00000800,
+            Suspended = 0x00000004,
+            UnicodeEnvironment = 0x00000400,
+            ExtendedStartupInfoPresent = 0x00080000
+        }
+
+        [Flags]
+        public enum _SECURITY_IMPERSONATION_LEVEL : int
+        {
+            SecurityAnonymous = 0,
+            SecurityIdentification = 1,
+            SecurityImpersonation = 2,
+            SecurityDelegation = 3
+        };
+
+        [Flags]
+        public enum CREATION_FLAGS : uint
+        {
+            NONE = 0x0,
+            CREATE_DEFAULT_ERROR_MODE = 0x04000000,
+            CREATE_NEW_CONSOLE = 0x00000010,
+            CREATE_NEW_PROCESS_GROUP = 0x00000200,
+            CREATE_SEPARATE_WOW_VDM = 0x00000800,
+            CREATE_SUSPENDED = 0x00000004,
+            CREATE_UNICODE_ENVIRONMENT = 0x00000400,
+            EXTENDED_STARTUPINFO_PRESENT = 0x00080000
+        }
+
+        [Flags]
+        public enum _SID_NAME_USE
+        {
+            SidTypeUser = 1,
+            SidTypeGroup,
+            SidTypeDomain,
+            SidTypeAlias,
+            SidTypeWellKnownGroup,
+            SidTypeDeletedAccount,
+            SidTypeInvalid,
+            SidTypeUnknown,
+            SidTypeComputer,
+            SidTypeLabel
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct _TOKEN_PRIVILEGES
+        {
+            public UInt32 PrivilegeCount;
+            public _LUID_AND_ATTRIBUTES Privileges;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct _LUID_AND_ATTRIBUTES
+        {
+            public _LUID Luid;
+            public System.UInt32 Attributes;
+        }
+
+        internal const Int32 ANYSIZE_ARRAY = 1;
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct _PRIVILEGE_SET
+        {
+            public System.UInt32 PrivilegeCount;
+            public System.UInt32 Control;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = (Int32)ANYSIZE_ARRAY)]
+            public _LUID_AND_ATTRIBUTES[] Privilege;
+        }
+
+        [Flags]
+        public enum _TOKEN_INFORMATION_CLASS
+        {
+            TokenUser = 1,
+            TokenGroups,
+            TokenPrivileges,
+            TokenOwner,
+            TokenPrimaryGroup,
+            TokenDefaultDacl,
+            TokenSource,
+            TokenType,
+            TokenImpersonationLevel,
+            TokenStatistics,
+            TokenRestrictedSids,
+            TokenSessionId,
+            TokenGroupsAndPrivileges,
+            TokenSessionReference,
+            TokenSandBoxInert,
+            TokenAuditPolicy,
+            TokenOrigin,
+            TokenElevationType,
+            TokenLinkedToken,
+            TokenElevation,
+            TokenHasRestrictions,
+            TokenAccessInformation,
+            TokenVirtualizationAllowed,
+            TokenVirtualizationEnabled,
+            TokenIntegrityLevel,
+            TokenUIAccess,
+            TokenMandatoryPolicy,
+            TokenLogonSid,
+            TokenIsAppContainer,
+            TokenCapabilities,
+            TokenAppContainerSid,
+            TokenAppContainerNumber,
+            TokenUserClaimAttributes,
+            TokenDeviceClaimAttributes,
+            TokenRestrictedUserClaimAttributes,
+            TokenRestrictedDeviceClaimAttributes,
+            TokenDeviceGroups,
+            TokenRestrictedDeviceGroups,
+            TokenSecurityAttributes,
+            TokenIsRestricted,
+            MaxTokenInfoClass
         }
     }
 }
