@@ -217,7 +217,7 @@ namespace DInvoke.DynamicInvoke
                 {
                     hModule = dte.DllBase;
                 }
-            
+
                 // Move Ptr
                 flink = dte.InLoadOrderLinks.Flink;
                 dte = (Data.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Data.PE.LDR_DATA_TABLE_ENTRY));
@@ -509,7 +509,8 @@ namespace DInvoke.DynamicInvoke
                 {
                     PeMetaData.Is32Bit = false;
                     PeMetaData.OptHeader64 = (Data.PE.IMAGE_OPTIONAL_HEADER64)Marshal.PtrToStructure(OptHeader, typeof(Data.PE.IMAGE_OPTIONAL_HEADER64));
-                } else
+                }
+                else
                 {
                     throw new InvalidOperationException("Invalid magic value (PE32/PE32+).");
                 }
@@ -548,14 +549,14 @@ namespace DInvoke.DynamicInvoke
             {
                 Data.PE.ApiSetNamespaceEntry SetEntry = new Data.PE.ApiSetNamespaceEntry();
                 SetEntry = (Data.PE.ApiSetNamespaceEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry))), typeof(Data.PE.ApiSetNamespaceEntry));
-                string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2) + ".dll";
+                string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength / 2) + ".dll";
 
                 Data.PE.ApiSetValueEntry SetValue = new Data.PE.ApiSetValueEntry();
                 SetValue = (Data.PE.ApiSetValueEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset), typeof(Data.PE.ApiSetValueEntry));
                 string ApiSetValue = string.Empty;
                 if (SetValue.ValueCount != 0)
                 {
-                    ApiSetValue = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset), SetValue.ValueCount/2);
+                    ApiSetValue = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset), SetValue.ValueCount / 2);
                 }
 
                 // Add pair to dict
@@ -638,18 +639,18 @@ namespace DInvoke.DynamicInvoke
         /// <summary>
         /// Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
         /// </summary>
-        /// <author>Ruben Boonen (@FuzzySec) and Paul Laîné (@am0nsec)</author>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="FunctionName">The name of the function to search for (e.g. "NtAlertResumeThread").</param>
         /// <returns>IntPtr, Syscall stub</returns>
         public static IntPtr GetSyscallStub(string FunctionName)
         {
             // Verify process & architecture
             bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
-            /*if (IntPtr.Size == 4 && isWOW64)
+            if (IntPtr.Size == 4 && isWOW64)
             {
                 throw new InvalidOperationException("Generating Syscall stubs is not supported for WOW64.");
-            }*/
-            ProcessModule NativeModule = null;
+            }
+
             // Find the path for ntdll by looking at the currently loaded module
             string NtdllPath = string.Empty;
             ProcessModuleCollection ProcModules = Process.GetCurrentProcess().Modules;
@@ -658,16 +659,6 @@ namespace DInvoke.DynamicInvoke
                 if (Mod.FileName.EndsWith("ntdll.dll", StringComparison.OrdinalIgnoreCase))
                 {
                     NtdllPath = Mod.FileName;
-                }
-
-            }
-
-            foreach (ProcessModule _ in Process.GetCurrentProcess().Modules)
-            {
-                if (_.FileName.EndsWith("ntdll.dll", StringComparison.OrdinalIgnoreCase))
-                {
-                    NativeModule = _;
-                    NtdllPath = NativeModule.FileName;
                 }
             }
 
@@ -727,30 +718,6 @@ namespace DInvoke.DynamicInvoke
             if (BytesWritten != 0x50)
             {
                 throw new InvalidOperationException("Failed to write to memory.");
-            }
-
-            // Verify process & architecture
-            //bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
-
-            // Create custom WOW64 stub
-            if (IntPtr.Size == 4 && isWOW64)
-            {
-                IntPtr pNativeWow64Transition = GetExportAddress(NativeModule.BaseAddress, "Wow64Transition");
-                byte bRetValue = Marshal.ReadByte(pCallStub, 13);
-
-                // CALL DWORD PTR ntdll!Wow64SystemServiceCall
-                Marshal.WriteByte(pCallStub, 5, 0xff);
-                Marshal.WriteByte(pCallStub, 6, 0x15);
-                Marshal.WriteInt32(pCallStub, 7, pNativeWow64Transition.ToInt32());
-
-                // RET <val>
-                Marshal.WriteByte(pCallStub, 11, 0xc2);
-                Marshal.WriteByte(pCallStub, 12, bRetValue);
-                Marshal.WriteByte(pCallStub, 13, 0x00);
-
-                // NOP for alignment
-                Marshal.WriteByte(pCallStub, 14, 0x90);
-                Marshal.WriteByte(pCallStub, 15, 0x90);
             }
 
             // Change call stub permissions
