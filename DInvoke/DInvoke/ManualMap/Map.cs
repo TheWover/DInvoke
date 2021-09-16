@@ -83,6 +83,8 @@ namespace DInvoke.ManualMap
                 ModuleBase = pBaseAddress
             };
 
+            DynamicInvoke.Win32.CloseHandle(hFile);
+
             return SecMapObject;
         }
 

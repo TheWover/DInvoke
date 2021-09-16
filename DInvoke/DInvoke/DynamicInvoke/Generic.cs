@@ -220,7 +220,7 @@ namespace DInvoke.DynamicInvoke
                 {
                     hModule = dte.DllBase;
                 }
-            
+
                 // Move Ptr
                 flink = dte.InLoadOrderLinks.Flink;
                 dte = (Data.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Data.PE.LDR_DATA_TABLE_ENTRY));
@@ -590,7 +590,8 @@ namespace DInvoke.DynamicInvoke
                 {
                     PeMetaData.Is32Bit = false;
                     PeMetaData.OptHeader64 = (Data.PE.IMAGE_OPTIONAL_HEADER64)Marshal.PtrToStructure(OptHeader, typeof(Data.PE.IMAGE_OPTIONAL_HEADER64));
-                } else
+                }
+                else
                 {
                     throw new InvalidOperationException("Invalid magic value (PE32/PE32+).");
                 }
@@ -628,10 +629,11 @@ namespace DInvoke.DynamicInvoke
             for (var i = 0; i < Namespace.Count; i++)
             {
                 Data.PE.ApiSetNamespaceEntry SetEntry = new Data.PE.ApiSetNamespaceEntry();
+
                 IntPtr pSetEntry = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry)));
                 SetEntry = (Data.PE.ApiSetNamespaceEntry)Marshal.PtrToStructure(pSetEntry, typeof(Data.PE.ApiSetNamespaceEntry));
 
-                string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2);
+                string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength / 2);
                 string ApiSetEntryKey = ApiSetEntryName.Substring(0, ApiSetEntryName.Length - 2) + ".dll" ; // Remove the patch number and add .dll
 
                 Data.PE.ApiSetValueEntry SetValue = new Data.PE.ApiSetValueEntry();
@@ -661,7 +663,7 @@ namespace DInvoke.DynamicInvoke
                 if (SetValue.ValueCount != 0)
                 {
                     IntPtr pValue = (IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset);
-                    ApiSetValue = Marshal.PtrToStringUni(pValue, SetValue.ValueCount/2);
+                    ApiSetValue = Marshal.PtrToStringUni(pValue, SetValue.ValueCount / 2);
                 }
 
                 // Add pair to dict
@@ -698,7 +700,7 @@ namespace DInvoke.DynamicInvoke
         /// <summary>
         /// Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
         /// </summary>
-        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <author>Ruben Boonen (@FuzzySec), TheWover (@TheRealWover)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
         /// <returns>void</returns>
@@ -706,12 +708,22 @@ namespace DInvoke.DynamicInvoke
         {
             IntPtr lpEntryPoint = PEINFO.Is32Bit ? (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint) :
                                                    (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
-
-            Data.PE.DllMain fDllMain = (Data.PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(Data.PE.DllMain));
-            bool CallRes = fDllMain(ModuleMemoryBase, Data.PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
-            if (!CallRes)
+            // If there is an entry point, call it
+            if (lpEntryPoint != ModuleMemoryBase)
             {
-                throw new InvalidOperationException("Failed to call DllMain -> DLL_PROCESS_ATTACH");
+                Data.PE.DllMain fDllMain = (Data.PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(Data.PE.DllMain));
+                try
+                {
+                    bool CallRes = fDllMain(ModuleMemoryBase, Data.PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
+                    if (!CallRes)
+                    {
+                        throw new InvalidOperationException("Call to entry point failed -> DLL_PROCESS_ATTACH");
+                    }
+                }
+                catch
+                {
+                    throw new InvalidOperationException("Invalid entry point -> DLL_PROCESS_ATTACH");
+                }
             }
         }
 
