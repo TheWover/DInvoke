@@ -328,6 +328,7 @@ namespace DInvoke.Data
             public UInt64 AddressOfData;
         }
 
+        // API_SET_NAMESPACE_ARRAY
         [StructLayout(LayoutKind.Explicit)]
         public struct ApiSetNamespace
         {
@@ -338,7 +339,8 @@ namespace DInvoke.Data
             public int EntryOffset;
         }
 
-        [StructLayout(LayoutKind.Explicit, Size = 24)]
+        // API_SET_NAMESPACE_ENTRY
+        [StructLayout(LayoutKind.Explicit)]
         public struct ApiSetNamespaceEntry
         {
             [FieldOffset(0x04)]
@@ -349,11 +351,24 @@ namespace DInvoke.Data
 
             [FieldOffset(0x10)]
             public int ValueOffset;
+
+            [FieldOffset(0x14)]
+            public int ValueLength;
         }
 
+        // API_SET_VALUE_ENTRY
         [StructLayout(LayoutKind.Explicit)]
         public struct ApiSetValueEntry
         {
+            [FieldOffset(0x00)]
+            public int Flags;
+
+            [FieldOffset(0x04)]
+            public int NameOffset;
+
+            [FieldOffset(0x08)]
+            public int NameCount;
+
             [FieldOffset(0x0C)]
             public int ValueOffset;
 

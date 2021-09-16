@@ -19,7 +19,7 @@ namespace DInvoke.ManualMap
         /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
         /// <param name="DLLPath">Full path fo the DLL on disk.</param>
         /// <returns>PE.PE_MANUAL_MAP</returns>
-        public static Data.PE.PE_MANUAL_MAP MapModuleFromDisk(string DLLPath)
+        public static Data.PE.PE_MANUAL_MAP MapModuleFromDiskToSection(string DLLPath)
         {
             // Check file exists
             if (!File.Exists(DLLPath))
@@ -82,6 +82,8 @@ namespace DInvoke.ManualMap
                 PEINFO = DynamicInvoke.Generic.GetPeMetaData(pBaseAddress),
                 ModuleBase = pBaseAddress
             };
+
+            DynamicInvoke.Win32.CloseHandle(hFile);
 
             return SecMapObject;
         }
@@ -235,12 +237,13 @@ namespace DInvoke.ManualMap
                 }
                 else
                 {
-                    // API Set DLL?
+                    string LookupKey = DllName.Substring(0, DllName.Length - 6) + ".dll";
+                    // API Set DLL? Ignore the patch number.
                     if (OSVersion.MajorVersion >= 10 && (DllName.StartsWith("api-") || DllName.StartsWith("ext-")) &&
-                        ApiSetDict.ContainsKey(DllName) && ApiSetDict[DllName].Length > 0)
+                        ApiSetDict.ContainsKey(LookupKey) && ApiSetDict[LookupKey].Length > 0)
                     {
                         // Not all API set DLL's have a registered host mapping
-                        DllName = ApiSetDict[DllName];
+                        DllName = ApiSetDict[LookupKey];
                     }
 
                     // Check and / or load DLL
@@ -319,6 +322,8 @@ namespace DInvoke.ManualMap
                             }
                         }
                     }
+
+                    // Go to the next IID
                     counter++;
                     iid = (Data.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(
                         (IntPtr)((UInt64)pImportTable + (uint)(Marshal.SizeOf(iid) * counter)),
