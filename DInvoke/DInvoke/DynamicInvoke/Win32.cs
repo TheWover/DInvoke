@@ -123,68 +123,68 @@ namespace DInvoke.DynamicInvoke
             );
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean CloseHandle(IntPtr hProcess);
+            public delegate Boolean CloseHandle(IntPtr hProcess);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate IntPtr GetCurrentThread();
+            public delegate IntPtr GetCurrentThread();
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate UInt32 SearchPath(String lpPath, String lpFileName, String lpExtension, UInt32 nBufferLength, StringBuilder lpBuffer, ref IntPtr lpFilePart);
+            public delegate UInt32 SearchPath(String lpPath, String lpFileName, String lpExtension, UInt32 nBufferLength, StringBuilder lpBuffer, ref IntPtr lpFilePart);
 
             //Advapi32.dll
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean OpenProcessToken(IntPtr hProcess, UInt32 dwDesiredAccess, out IntPtr hToken);
+            public delegate Boolean OpenProcessToken(IntPtr hProcess, UInt32 dwDesiredAccess, out IntPtr hToken);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean SetThreadToken(IntPtr ThreadHandle, IntPtr TokenHandle);
+            public delegate Boolean SetThreadToken(IntPtr ThreadHandle, IntPtr TokenHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean DuplicateTokenEx(IntPtr hExistingToken, UInt32 dwDesiredAccess, IntPtr lpTokenAttributes, _SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, _TOKEN_TYPE TokenType, out IntPtr phNewToken);
+            public delegate Boolean DuplicateTokenEx(IntPtr hExistingToken, UInt32 dwDesiredAccess, IntPtr lpTokenAttributes, _SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, _TOKEN_TYPE TokenType, out IntPtr phNewToken);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean ImpersonateLoggedOnUser(IntPtr hToken);
+            public delegate Boolean ImpersonateLoggedOnUser(IntPtr hToken);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean OpenThreadToken(IntPtr ThreadHandle, UInt32 DesiredAccess, Boolean OpenAsSelf, ref IntPtr TokenHandle);
+            public delegate Boolean OpenThreadToken(IntPtr ThreadHandle, UInt32 DesiredAccess, Boolean OpenAsSelf, ref IntPtr TokenHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean ImpersonateSelf(_SECURITY_IMPERSONATION_LEVEL ImpersonationLevel);
+            public delegate Boolean ImpersonateSelf(_SECURITY_IMPERSONATION_LEVEL ImpersonationLevel);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean LookupPrivilegeValueA(String lpSystemName, String lpName, ref _LUID luid);
+            public delegate Boolean LookupPrivilegeValueA(String lpSystemName, String lpName, ref _LUID luid);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean AdjustTokenPrivileges(IntPtr TokenHandle, Boolean DisableAllPrivileges, ref _TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, ref _TOKEN_PRIVILEGES PreviousState, out UInt32 ReturnLengthInBytes);
+            public delegate Boolean AdjustTokenPrivileges(IntPtr TokenHandle, Boolean DisableAllPrivileges, ref _TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, ref _TOKEN_PRIVILEGES PreviousState, out UInt32 ReturnLengthInBytes);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean LookupPrivilegeName(String lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref Int32 cchName);
+            public delegate Boolean LookupPrivilegeName(String lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref Int32 cchName);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean GetTokenInformation(IntPtr TokenHandle, _TOKEN_INFORMATION_CLASS TokenInformationClass, IntPtr TokenInformation, UInt32 TokenInformationLength, out UInt32 ReturnLength);
+            public delegate Boolean GetTokenInformation(IntPtr TokenHandle, _TOKEN_INFORMATION_CLASS TokenInformationClass, IntPtr TokenInformation, UInt32 TokenInformationLength, out UInt32 ReturnLength);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean PrivilegeCheck(IntPtr ClientToken, _PRIVILEGE_SET RequiredPrivileges, IntPtr pfResult);
+            public delegate Boolean PrivilegeCheck(IntPtr ClientToken, _PRIVILEGE_SET RequiredPrivileges, IntPtr pfResult);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate bool LookupAccountSidA(String lpSystemName, IntPtr Sid, StringBuilder lpName, ref UInt32 cchName, StringBuilder ReferencedDomainName, ref UInt32 cchReferencedDomainName, out _SID_NAME_USE peUse);
+            public delegate bool LookupAccountSidA(String lpSystemName, IntPtr Sid, StringBuilder lpName, ref UInt32 cchName, StringBuilder ReferencedDomainName, ref UInt32 cchReferencedDomainName, out _SID_NAME_USE peUse);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate bool ConvertSidToStringSidA(IntPtr Sid, ref IntPtr StringSid);
+            public delegate bool ConvertSidToStringSidA(IntPtr Sid, ref IntPtr StringSid);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean LookupPrivilegeNameA(String lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref Int32 cchName);
+            public delegate Boolean LookupPrivilegeNameA(String lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref Int32 cchName);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate bool CreateProcessWithTokenW(IntPtr hToken, LogonFlags dwLogonFlags, Byte[] lpApplicationName, Byte[] lpCommandLine, CreationFlags dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref _STARTUPINFO lpStartupInfo, out _PROCESS_INFORMATION lpProcessInformation);
+            public delegate bool CreateProcessWithTokenW(IntPtr hToken, LogonFlags dwLogonFlags, Byte[] lpApplicationName, Byte[] lpCommandLine, CreationFlags dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref _STARTUPINFO lpStartupInfo, out _PROCESS_INFORMATION lpProcessInformation);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate Boolean CreateProcessWithLogonW(String lpUsername,String lpDomain,String lpPassword, LogonFlags dwLogonFlags,Byte[] lpApplicationName,Byte[] lpCommandLine,CREATION_FLAGS dwCreationFlags,IntPtr lpEnvironment,String lpCurrentDirectory,ref _STARTUPINFO lpStartupInfo,out _PROCESS_INFORMATION lpProcessInformation);
+            public delegate Boolean CreateProcessWithLogonW(String lpUsername,String lpDomain,String lpPassword, LogonFlags dwLogonFlags,Byte[] lpApplicationName,Byte[] lpCommandLine,CREATION_FLAGS dwCreationFlags,IntPtr lpEnvironment,String lpCurrentDirectory,ref _STARTUPINFO lpStartupInfo,out _PROCESS_INFORMATION lpProcessInformation);
             
             // Secur32.dll || sspicli.dll
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            delegate UInt32 LsaGetLogonSessionData(IntPtr LogonId, out IntPtr ppLogonSessionData);
+            public delegate UInt32 LsaGetLogonSessionData(IntPtr LogonId, out IntPtr ppLogonSessionData);
         }
 
         [StructLayout(LayoutKind.Sequential)]
