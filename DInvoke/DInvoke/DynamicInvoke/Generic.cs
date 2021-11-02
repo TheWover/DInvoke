@@ -256,7 +256,7 @@ namespace DInvoke.DynamicInvoke
         /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
         /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName, bool ResolveForwards = true)
+        public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName, bool ResolveForwards = true, bool CanLoadFromDisk = false, bool Overload = false)
         {
             IntPtr FunctionPtr = IntPtr.Zero;
             try
@@ -303,7 +303,7 @@ namespace DInvoke.DynamicInvoke
                         
                         if (ResolveForwards == true)
                             // If the export address points to a forward, get the address
-                            FunctionPtr = GetForwardAddress(FunctionPtr);
+                            FunctionPtr = GetForwardAddress(FunctionPtr, CanLoadFromDisk, Overload);
 
                         break;
                     }
@@ -331,7 +331,7 @@ namespace DInvoke.DynamicInvoke
         /// <param name="Ordinal">The ordinal number to search for (e.g. 0x136 -> ntdll!NtCreateThreadEx).</param>
         /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetExportAddress(IntPtr ModuleBase, short Ordinal, bool ResolveForwards = true)
+        public static IntPtr GetExportAddress(IntPtr ModuleBase, short Ordinal, bool ResolveForwards = true, bool CanLoadFromDisk = false, bool Overload = false)
         {
             IntPtr FunctionPtr = IntPtr.Zero;
             try
@@ -400,7 +400,7 @@ namespace DInvoke.DynamicInvoke
         /// <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
         /// <param name="ResolveForwards">Whether or not to resolve export forwards. Default is true.</param>
         /// <returns>IntPtr for the desired function.</returns>
-        public static IntPtr GetExportAddress(IntPtr ModuleBase, string FunctionHash, long Key, bool ResolveForwards = true)
+        public static IntPtr GetExportAddress(IntPtr ModuleBase, string FunctionHash, long Key, bool ResolveForwards = true, bool CanLoadFromDisk = false, bool Overload = false)
         {
             IntPtr FunctionPtr = IntPtr.Zero;
             try
@@ -467,8 +467,9 @@ namespace DInvoke.DynamicInvoke
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="ExportAddress">Function of an exported address, found by parsing a PE file's export table.</param>
         /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="Overload">Optional, indicates if the dll should be loaded using overload</param>
         /// <returns>IntPtr for the forward. If the function is not forwarded, return the original pointer.</returns>
-        public static IntPtr GetForwardAddress(IntPtr ExportAddress, bool CanLoadFromDisk = false)
+        public static IntPtr GetForwardAddress(IntPtr ExportAddress, bool CanLoadFromDisk = false, bool Overload = false)
         {
             IntPtr FunctionPtr = ExportAddress;
             try
@@ -492,7 +493,15 @@ namespace DInvoke.DynamicInvoke
 
                     IntPtr hModule = GetPebLdrModuleEntry(ForwardModuleName);
                     if (hModule == IntPtr.Zero && CanLoadFromDisk == true)
-                        hModule = LoadModuleFromDisk(ForwardModuleName);
+                        if (Overload)
+                        {
+                            StringBuilder ForwardModulePath = new StringBuilder("",256);
+                            IntPtr ForwardModulePathOut;
+                            Data.Native.NTSTATUS res = Win32.SearchPathW(null, ForwardModuleName, null, (UInt32)ForwardModulePath.Capacity, ForwardModulePath, out ForwardModulePathOut);
+                            hModule = ManualMap.Overload.OverloadModule(ForwardModulePath.ToString()).ModuleBase;
+                        }
+                        else
+                            hModule = LoadModuleFromDisk(ForwardModuleName);
                     if (hModule != IntPtr.Zero)
                     {
                         FunctionPtr = GetExportAddress(hModule, ForwardExportName);
@@ -728,8 +737,10 @@ namespace DInvoke.DynamicInvoke
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
         /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
+        /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="Overload">Optional, indicates if the dll should be loaded using overload</param>
         /// <returns>void</returns>
-        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
+        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true, bool CanLoadFromDisk = false, bool Overload = false)
         {
             // Call entry point if user has specified
             if (CallEntry)
@@ -738,7 +749,7 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Get export pointer
-            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName);
+            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName, CanLoadFromDisk: CanLoadFromDisk, Overload: Overload);
 
             // Call export
             return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
@@ -754,8 +765,10 @@ namespace DInvoke.DynamicInvoke
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
         /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
+        /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="Overload">Optional, indicates if the dll should be loaded using overload</param>
         /// <returns>void</returns>
-        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, short Ordinal, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
+        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, short Ordinal, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true, bool CanLoadFromDisk = false, bool Overload = false)
         {
             // Call entry point if user has specified
             if (CallEntry)
@@ -764,7 +777,7 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Get export pointer
-            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, Ordinal);
+            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, Ordinal, CanLoadFromDisk: CanLoadFromDisk, Overload: Overload);
 
             // Call export
             return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
@@ -781,8 +794,10 @@ namespace DInvoke.DynamicInvoke
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
         /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
+        /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+        /// <param name="Overload">Optional, indicates if the dll should be loaded using overload</param>
         /// <returns>void</returns>
-        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string FunctionHash, long Key, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
+        public static object CallMappedDLLModuleExport(Data.PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string FunctionHash, long Key, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true, bool CanLoadFromDisk = false, bool Overload = false)
         {
             // Call entry point if user has specified
             if (CallEntry)
@@ -791,7 +806,7 @@ namespace DInvoke.DynamicInvoke
             }
 
             // Get export pointer
-            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, FunctionHash, Key);
+            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, FunctionHash, Key, CanLoadFromDisk: CanLoadFromDisk, Overload: Overload);
 
             // Call export
             return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
