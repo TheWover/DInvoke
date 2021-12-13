@@ -164,7 +164,7 @@ namespace DInvoke.DynamicInvoke
             ProcessModuleCollection ProcModules = Process.GetCurrentProcess().Modules;
             foreach (ProcessModule Mod in ProcModules)
             {
-                if (Mod.FileName.ToLower().EndsWith(DLLName.ToLower()))
+                if (Mod.FileName.ToLower().EndsWith("\\" + DLLName.ToLower()))
                 {
                     return Mod.BaseAddress;
                 }
