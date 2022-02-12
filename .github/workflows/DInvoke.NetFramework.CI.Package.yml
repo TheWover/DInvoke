@@ -7,14 +7,16 @@ on:
 env:
      MAJOR_VERSION: 1
      MINOR_VERSION: 0
-     PATCH_VERSION: 4
+     PATCH_VERSION: 5
 jobs:
   package:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
     - name: Setup Nuget.exe
-      uses: warrenbuckley/Setup-Nuget@v1
+      uses: nuget/setup-nuget@v1
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
     - name: Restore packages
       run: nuget restore DInvoke\DInvoke.sln
     - name: Setup MSBuild.exe
