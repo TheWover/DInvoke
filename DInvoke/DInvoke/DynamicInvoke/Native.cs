@@ -14,6 +14,37 @@ namespace DInvoke.DynamicInvoke
     /// </summary>
     public class Native
     {
+        public static Data.Native.NTSTATUS NtCreateUserProcess(
+            ref IntPtr processHandle,
+            ref IntPtr threadHandle,
+            Data.Native.PROCESS_ACCESS processDesiredAccess,
+            Data.Native.THREAD_ACCESS threadDesiredAccess,
+            IntPtr processObjectAttributes,
+            IntPtr threadObjectAttributes,
+            Data.Native.PROCESS_CREATE_FLAGS processFlags,
+            Data.Native.THREAD_CREATE_FLAGS threadFlags,
+            IntPtr processParameters,
+            ref Data.Native.PS_CREATE_INFO psCreateInfo,
+            Data.Native.PS_ATTRIBUTE_LIST psAttributeList)
+        {
+            object[] funcargs =
+            {
+                processHandle, threadHandle, processDesiredAccess, threadDesiredAccess, processObjectAttributes,
+                threadObjectAttributes, processFlags, threadFlags, processParameters, psCreateInfo, psAttributeList
+            };
+
+            Data.Native.NTSTATUS retValue = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(
+                @"ntdll.dll",
+                @"NtCreateUserProcess",
+                typeof(DELEGATES.NtCreateUserProcess),
+                ref funcargs);
+
+            processHandle = (IntPtr)funcargs[0];
+            threadHandle = (IntPtr)funcargs[1];
+
+            return retValue;
+        }
+        
         public static Data.Native.NTSTATUS NtCreateThreadEx(
             ref IntPtr threadHandle,
             Data.Win32.WinNT.ACCESS_MASK desiredAccess,
@@ -146,6 +177,35 @@ namespace DInvoke.DynamicInvoke
             ViewSize = (ulong) funcargs[6];
 
             return retValue;
+        }
+
+        public static Data.Native.NTSTATUS RtlCreateProcessParametersEx(
+            ref IntPtr processParameters,
+            ref Data.Native.UNICODE_STRING imagePathName,
+            IntPtr dllPath,
+            ref Data.Native.UNICODE_STRING currentDirectory,
+            ref Data.Native.UNICODE_STRING commandLine,
+            IntPtr environment,
+            IntPtr windowTitle,
+            IntPtr desktopInfo,
+            IntPtr shellInfo,
+            IntPtr runtimeData,
+            Data.Native.CreateProcessParametersFlags flags)
+        {
+            object[] funcargs =
+            {
+                processParameters, imagePathName, dllPath, currentDirectory, commandLine, environment,
+                windowTitle, desktopInfo, shellInfo, runtimeData, flags
+            };
+
+            Data.Native.NTSTATUS status = (Data.Native.NTSTATUS)Generic.DynamicAPIInvoke(
+                @"ntdll.dll",
+                @"RtlCreateProcessParametersEx",
+                typeof(DELEGATES.RtlCreateProcessParametersEx),
+                ref funcargs);
+
+            processParameters = (IntPtr)funcargs[0];
+            return status;
         }
 
         public static void RtlInitUnicodeString(ref Data.Native.UNICODE_STRING DestinationString, [MarshalAs(UnmanagedType.LPWStr)] string SourceString)
@@ -606,6 +666,20 @@ namespace DInvoke.DynamicInvoke
         public struct DELEGATES
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS NtCreateUserProcess(
+                ref IntPtr processHandle,
+                ref IntPtr threadHandle,
+                Data.Native.PROCESS_ACCESS processDesiredAccess,
+                Data.Native.THREAD_ACCESS threadDesiredAccess,
+                IntPtr processObjectAttributes,
+                IntPtr threadObjectAttributes,
+                Data.Native.PROCESS_CREATE_FLAGS processFlags,
+                Data.Native.THREAD_CREATE_FLAGS threadFlags,
+                IntPtr processParameters,
+                ref Data.Native.PS_CREATE_INFO psCreateInfo,
+                Data.Native.PS_ATTRIBUTE_LIST psAttributeList);
+            
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate Data.Native.NTSTATUS NtCreateThreadEx(
                 out IntPtr threadHandle,
                 Data.Win32.WinNT.ACCESS_MASK desiredAccess,
@@ -666,6 +740,20 @@ namespace DInvoke.DynamicInvoke
                 UInt32 dwFlags,
                 ref Data.Native.UNICODE_STRING ModuleFileName,
                 ref IntPtr ModuleHandle);
+            
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Data.Native.NTSTATUS RtlCreateProcessParametersEx(
+                ref IntPtr processParameters,
+                ref Data.Native.UNICODE_STRING imagePathName,
+                IntPtr dllPath,
+                ref Data.Native.UNICODE_STRING currentDirectory,
+                ref Data.Native.UNICODE_STRING commandLine,
+                IntPtr environment,
+                IntPtr windowTitle,
+                IntPtr desktopInfo,
+                IntPtr shellInfo,
+                IntPtr runtimeData,
+                Data.Native.CreateProcessParametersFlags flags);
             
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate void RtlInitUnicodeString(
