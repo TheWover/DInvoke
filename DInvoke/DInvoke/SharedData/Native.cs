@@ -160,18 +160,182 @@ namespace DInvoke.Data
             ProcessRevokeFileHandles, // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
             MaxProcessInfoClass
         };
-
-        /// <summary>
-        /// NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
-        /// </summary>
-        public enum NT_CREATION_FLAGS : ulong
+        
+        [Flags]
+        public enum CreateProcessParametersFlags
         {
-            CREATE_SUSPENDED = 0x00000001,
-            SKIP_THREAD_ATTACH = 0x00000002,
-            HIDE_FROM_DEBUGGER = 0x00000004,
-            HAS_SECURITY_DESCRIPTOR = 0x00000010,
-            ACCESS_CHECK_IN_TARGET = 0x00000020,
-            INITIAL_THREAD = 0x00000080
+            None = 0,
+            Normalize = 1,
+        }
+        
+        [Flags]
+        public enum PROCESS_CREATE_FLAGS
+        {
+            None = 0,
+            BreakawayJob = 0x00000001,    // Only allowed if job allows breakaway
+            NoDebugInherit = 0x00000002,
+            InheritHandles = 0x00000004,
+            OverrideAddressSpace = 0x00000008,
+            LargePages = 0x00000010,
+            LargePagesSystemDll = 0x00000020,
+            ProtectedProcess = 0x00000040,
+            CreateSession = 0x00000080,
+            InheritFromParent = 0x00000100,
+            TerminateOnAbnormalExit = 0x200,
+            ForceBreakawayJob = 0x400,     // Needs TCB
+            // This is same as ForceBreakawayJob prior to Anniversary Edition
+            MinimalProcess = 0x800,        // Needs Kernel Privileges
+            IgnoreSectionObject = 0x1000,
+            MinimalProcessFlag1 = 0x2000,
+            MinimalProcessFlag2 = 0x4000,
+            AuxiliaryProcess = 0x8000,     // Needs TCB
+        }
+
+        [Flags]
+        public enum THREAD_CREATE_FLAGS
+        {
+            None = 0,
+            Suspended = 0x00000001,
+            SkipThreadAttach = 0x00000002,
+            HideFromDebugger = 0x00000004,
+            HasSecurityDescriptor = 0x00000010,
+            AccessCheckInTarget = 0x00000020,
+            InitialThread = 0x00000080,
+        }
+        
+        [Flags]
+        public enum PROCESS_ACCESS : uint
+        {
+            None = 0,
+            Terminate = 0x0001,
+            CreateThread = 0x0002,
+            SetSessionId = 0x0004,
+            VmOperation = 0x0008,
+            VmRead = 0x0010,
+            VmWrite = 0x0020,
+            DupHandle = 0x0040,
+            CreateProcess = 0x0080,
+            SetQuota = 0x0100,
+            SetInformation = 0x0200,
+            QueryInformation = 0x0400,
+            SuspendResume = 0x0800,
+            QueryLimitedInformation = 0x1000,
+            SetLimitedInformation = 0x2000,
+            ALL_ACCESS = 0x1FFFFF,
+            GenericRead = GENERIC_ACCESS_RIGHTS.GenericRead,
+            GenericWrite = GENERIC_ACCESS_RIGHTS.GenericWrite,
+            GenericExecute = GENERIC_ACCESS_RIGHTS.GenericExecute,
+            GenericAll = GENERIC_ACCESS_RIGHTS.GenericAll,
+            Delete = GENERIC_ACCESS_RIGHTS.Delete,
+            ReadControl = GENERIC_ACCESS_RIGHTS.ReadControl,
+            WriteDac = GENERIC_ACCESS_RIGHTS.WriteDac,
+            WriteOwner = GENERIC_ACCESS_RIGHTS.WriteOwner,
+            Synchronize = GENERIC_ACCESS_RIGHTS.Synchronize,
+            MaximumAllowed = GENERIC_ACCESS_RIGHTS.MaximumAllowed,
+            AccessSystemSecurity = GENERIC_ACCESS_RIGHTS.AccessSystemSecurity
+        }
+        
+        [Flags]
+        public enum THREAD_ACCESS : uint
+        {
+            Terminate = 0x0001,
+            SuspendResume = 0x0002,
+            Alert = 0x0004,
+            GetContext = 0x0008,
+            SetContext = 0x0010,
+            SetInformation = 0x0020,
+            QueryInformation = 0x0040,
+            SetThreadToken = 0x0080,
+            Impersonate = 0x0100,
+            DirectImpersonation = 0x0200,
+            SetLimitedInformation = 0x0400,
+            QueryLimitedInformation = 0x0800,
+            Resume = 0x1000,
+            ALL_ACCESS = 0x1FFFFF,
+            GenericRead = GENERIC_ACCESS_RIGHTS.GenericRead,
+            GenericWrite = GENERIC_ACCESS_RIGHTS.GenericWrite,
+            GenericExecute = GENERIC_ACCESS_RIGHTS.GenericExecute,
+            GenericAll = GENERIC_ACCESS_RIGHTS.GenericAll,
+            Delete = GENERIC_ACCESS_RIGHTS.Delete,
+            ReadControl = GENERIC_ACCESS_RIGHTS.ReadControl,
+            WriteDac = GENERIC_ACCESS_RIGHTS.WriteDac,
+            WriteOwner = GENERIC_ACCESS_RIGHTS.WriteOwner,
+            Synchronize = GENERIC_ACCESS_RIGHTS.Synchronize,
+            MaximumAllowed = GENERIC_ACCESS_RIGHTS.MaximumAllowed,
+            AccessSystemSecurity = GENERIC_ACCESS_RIGHTS.AccessSystemSecurity
+        }
+        
+        [Flags]
+        public enum GENERIC_ACCESS_RIGHTS : uint
+        {
+            None = 0,
+            Access0 = 0x00000001,
+            Access1 = 0x00000002,
+            Access2 = 0x00000004,
+            Access3 = 0x00000008,
+            Access4 = 0x00000010,
+            Access5 = 0x00000020,
+            Access6 = 0x00000040,
+            Access7 = 0x00000080,
+            Access8 = 0x00000100,
+            Access9 = 0x00000200,
+            Access10 = 0x00000400,
+            Access11 = 0x00000800,
+            Access12 = 0x00001000,
+            Access13 = 0x00002000,
+            Access14 = 0x00004000,
+            Access15 = 0x00008000,
+            Delete = 0x00010000,
+            ReadControl = 0x00020000,
+            WriteDac = 0x00040000,
+            WriteOwner = 0x00080000,
+            Synchronize = 0x00100000,
+            AccessSystemSecurity = 0x01000000,
+            MaximumAllowed = 0x02000000,
+            GenericAll = 0x10000000,
+            GenericExecute = 0x20000000,
+            GenericWrite = 0x40000000,
+            GenericRead = 0x80000000,
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PS_CREATE_INFO
+        {
+            public UIntPtr Size;
+            public PS_CREATE_STATE State;
+        
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 76)]
+            public byte[] Unused;
+        }
+        
+        public enum PS_CREATE_STATE
+        {
+            PsCreateInitialState = 0,
+            PsCreateFailOnFileOpen = 1,
+            PsCreateFailOnSectionCreate = 2,
+            PsCreateFailExeFormat = 3,
+            PsCreateFailMachineMismatch = 4,
+            PsCreateFailExeName = 5,
+            PsCreateSuccess = 6,
+            PsCreateMaximumStates = 7
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PS_ATTRIBUTE_LIST
+        {
+            public UIntPtr TotalLength;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
+            public PS_ATTRIBUTE[] Attributes;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PS_ATTRIBUTE
+        {
+            public ulong Attribute;
+            public ulong Size;
+            public IntPtr Value;
+            public IntPtr ReturnLength;
         }
 
         /// <summary>
